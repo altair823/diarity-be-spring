@@ -1,0 +1,58 @@
+name: CD for Spring Boot
+
+on:
+  workflow_call:
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: true
+      SERVER_USER:
+        required: true
+      SERVER_HOST:
+        required: true
+      SERVER_PORT:
+        required: true
+      HARBOR_USERNAME:
+        required: true
+      HARBOR_PASSWORD:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: true
+    inputs:
+      APP_NAME:
+        required: true
+        type: string
+      APP_PATH:
+        required: true
+        type: string
+      PROFILE_NAME:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      actions: write
+      packages: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Harbor Registry
+        uses: docker/login-action@v3
+        with:
+          registry: altairharbor.duckdns.org
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push
+        env:
+          APP_NAME: ${{ inputs.APP_NAME }}
+          PROFILE_NAME: ${{ inputs.PROFILE_NAME }}
+        run: |
+          docker buildx build \
+            --push \
+            -t altairharbor.duckdns.org/diarity-be/${APP_NAME}:${PROFILE_NAME} \
+            .
