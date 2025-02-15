@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  test:
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/ci.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  deploy:
+    needs: test
+    permissions:
+      contents: read
+      actions: write
+      packages: write
+    uses: ./.github/workflows/cd.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+    with:
+      APP_NAME: ${{ vars.APP_NAME }}
+      # APP_NAME: diarity-be
+      APP_PATH: ${{ vars.APP_PATH }}
+      # APP_PATH: /home/ubuntu/diarity-be
+      PROFILE_NAME: development

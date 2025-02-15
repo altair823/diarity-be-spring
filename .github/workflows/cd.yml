@@ -56,3 +56,33 @@ jobs:
             --push \
             -t altairharbor.duckdns.org/diarity-be/${APP_NAME}:${PROFILE_NAME} \
             .
+
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            export APP_NAME=${{ inputs.APP_NAME }}
+            export $PROFILE_NAME=${{ inputs.PROFILE_NAME }}
+            export APP_PATH=${{ inputs.APP_PATH }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
+            docker stop $APP_NAME || true
+            docker rm $APP_NAME || true
+            docker run -d 
+              --name $APP_NAME 
+              --restart always
+              -p 8080:8080
+              ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
+            docker system prune -f
+
+      - name: Notify to Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
