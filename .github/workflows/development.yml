@@ -27,7 +27,7 @@ jobs:
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
     with:
       APP_NAME: ${{ vars.APP_NAME }}
-      # APP_NAME: diarity-be
+      # APP_NAME: diary-be-springboot
       APP_PATH: ${{ vars.APP_PATH }}
-      # APP_PATH: /home/ubuntu/diarity-be
+      # APP_PATH: /home/ubuntu/diary-be-springboot
       PROFILE_NAME: development
