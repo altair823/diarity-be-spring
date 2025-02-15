@@ -69,14 +69,14 @@ jobs:
             export PROFILE_NAME=${{ inputs.PROFILE_NAME }}
             export APP_PATH=${{ inputs.APP_PATH }}
             docker login altairharbor.duckdns.org -u ${{ secrets.HARBOR_USERNAME }} -p ${{ secrets.HARBOR_PASSWORD }}
-            docker pull altairharbor.duckdns.org/diary-be-springboot/$APP_NAME:$PROFILE_NAME
+            docker pull altairharbor.duckdns.org/diary-be/$APP_NAME:$PROFILE_NAME
             docker stop $APP_NAME || true
             docker rm $APP_NAME || true
             docker run -d \
               --name $APP_NAME \
               --restart always \
               -p 8080:8080 \
-              altairharbor.duckdns.org/diary-be-springboot/$APP_NAME:$PROFILE_NAME
+              altairharbor.duckdns.org/diary-be/$APP_NAME:$PROFILE_NAME
             docker system prune -f
 
       - name: Notify to Slack
