@@ -11,7 +11,7 @@ COPY --chown=gradle:gradle . .
 RUN gradle build --no-daemon
 
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk-bookworm
+FROM amazoncorretto:21-alpine3.21
 
 # Set the working directory
 WORKDIR /app

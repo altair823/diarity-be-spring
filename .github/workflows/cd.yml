@@ -66,15 +66,15 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             export APP_NAME=${{ inputs.APP_NAME }}
-            export $PROFILE_NAME=${{ inputs.PROFILE_NAME }}
+            export PROFILE_NAME=${{ inputs.PROFILE_NAME }}
             export APP_PATH=${{ inputs.APP_PATH }}
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
             docker stop $APP_NAME || true
             docker rm $APP_NAME || true
-            docker run -d 
-              --name $APP_NAME 
-              --restart always
-              -p 8080:8080
+            docker run -d \
+              --name $APP_NAME \ 
+              --restart always \
+              -p 8080:8080 \
               ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
             docker system prune -f
 
