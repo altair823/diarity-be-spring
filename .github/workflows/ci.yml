@@ -2,8 +2,9 @@ name: CI for Spring Boot
 
 on:
   workflow_call:
-    SLACK_WEBHOOK_URL:
-      required: true
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
 
 jobs:
   test:
