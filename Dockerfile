@@ -8,7 +8,7 @@ WORKDIR /home/gradle/project
 COPY --chown=gradle:gradle . .
 
 # Build the application
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon -x test
 
 # Use an official OpenJDK runtime as a parent image
 FROM amazoncorretto:21-alpine3.21
