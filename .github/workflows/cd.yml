@@ -17,6 +17,8 @@ on:
         required: true
       SLACK_WEBHOOK_URL:
         required: true
+      JASYPT_ENCRYPTOR_PASSWORD:
+        required: true
     inputs:
       APP_NAME:
         required: true
@@ -76,6 +78,8 @@ jobs:
               --name $APP_NAME \
               --restart always \
               -p 8080:8080 \
+              -e JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} \
+              -e SPRING_PROFILES_ACTIVE=${{ inputs.PROFILE_NAME }} \
               altairharbor.duckdns.org/diarity-be/$APP_NAME:$PROFILE_NAME
             docker system prune -f
 

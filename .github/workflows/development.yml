@@ -25,6 +25,7 @@ jobs:
       SERVER_PORT: ${{ secrets.SERVER_PORT }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
     with:
       APP_NAME: ${{ vars.APP_NAME }}
       # APP_NAME: diary-be-springboot

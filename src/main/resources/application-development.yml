@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+        batch_size: 100
+        order_inserts: true
+        show_sql: true
+  datasource:
+    url: ENC(1iJnjtP3+zwsxsVN+/chlN/4yR8vUUJ/wPG53guGg0GNJRhgAiBygEZzmsQBFT0rhdX3/YwbuATlVqkNDnIemSh/X7JaAO9zAHybaHEv5E0=)
+    username: ENC(TwJf8ipc9jjUbnaV+/J95gvH+sPS+JvMfr3uGhDB8gy61ksIsLykfDJVEeg2n6Sh)
+    password: ENC(/SXZTHWDktYfpTm5yUqGOujbzoPhFreIaaFsD50WlFPPmFF9O8tJt4X3Hf36WcXOTQhftA3yzFMaKiIPgOKFYw==)
