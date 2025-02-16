@@ -27,7 +27,7 @@ public class JasyptTest {
 
     @Test
     public void stringDecrypt() {
-        String toDecryptString = "3e87kDVFYWW48Xv54bsVO5EsLh9QEDDyWiUQpqu6gqnK5ehiGEkKUYLNNL0/tGql";
+        String toDecryptString = "";
         if (!toDecryptString.isBlank()) {
             System.out.println(jasyptDecoding(toDecryptString));
         }
