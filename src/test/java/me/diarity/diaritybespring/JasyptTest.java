@@ -13,7 +13,7 @@ public class JasyptTest {
 
     @Test
     public void stringEncryptor() {
-        String toEncryptString = "";
+        String toEncryptString = "jdbc:mysql://192.168.0.125:3306/diarity?serverTimezone=UTC";
         System.out.println(jasyptEncoding(toEncryptString));
     }
 
@@ -27,7 +27,7 @@ public class JasyptTest {
 
     @Test
     public void stringDecrypt() {
-        String toDecryptString = "";
+        String toDecryptString = "v2XdSPe61e7UpkEh0SzRxu8CZ/+nxkO6vgyfVE/n0HCQlj2piY7K9bhn7BX+9QROGdL2m87bW2DU7LPKK9567xZs9NEGOp31evsG8vZqYEcLetRwo5q7eCuBGAWSt0I4";
         if (!toDecryptString.isBlank()) {
             System.out.println(jasyptDecoding(toDecryptString));
         }
