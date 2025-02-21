@@ -1,5 +1,8 @@
 package me.diarity.diaritybespring.config;
 
+import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.auth.JwtFilter;
+import me.diarity.diaritybespring.auth.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -8,11 +11,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 public class SecurityConfig {
+
+    private final JwtUtils jwtUtils;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,7 +30,13 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .anyRequest().permitAll());
+                        .requestMatchers(
+                                "/index",
+                                "/auth/login/google",
+                                "/auth/login/google/callback"
+                        ).permitAll()
+                        .anyRequest().authenticated())
+                .addFilterBefore(new JwtFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

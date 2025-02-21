@@ -14,3 +14,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: http://localhost:8080/auth/login/google/callback
