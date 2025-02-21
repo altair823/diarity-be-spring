@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
             Jws<Claims> claims = jwtUtils.getClaims(token);
             String username = (String) claims.getPayload().get("username");
@@ -43,8 +43,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     new SimpleGrantedAuthority(role)
             ));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        } else {
-            System.out.println("Token is null or does not start with Bearer");
         }
         filterChain.doFilter(request, response);
     }
