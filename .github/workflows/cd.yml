@@ -70,6 +70,7 @@ jobs:
             export APP_NAME=${{ inputs.APP_NAME }}
             export PROFILE_NAME=${{ inputs.PROFILE_NAME }}
             export APP_PATH=${{ inputs.APP_PATH }}
+            export JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
             docker login altairharbor.duckdns.org -u ${{ secrets.HARBOR_USERNAME }} -p ${{ secrets.HARBOR_PASSWORD }}
             docker pull altairharbor.duckdns.org/diarity-be/$APP_NAME:$PROFILE_NAME
             docker stop $APP_NAME || true
@@ -78,8 +79,8 @@ jobs:
               --name $APP_NAME \
               --restart always \
               -p 8080:8080 \
-              -e JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} \
-              -e SPRING_PROFILES_ACTIVE=${{ inputs.PROFILE_NAME }} \
+              -e JASYPT_ENCRYPTOR_PASSWORD=$JASYPT_ENCRYPTOR_PASSWORD \
+              -e SPRING_PROFILES_ACTIVE=$PROFILE_NAME \
               altairharbor.duckdns.org/diarity-be/$APP_NAME:$PROFILE_NAME
             docker system prune -f
 
