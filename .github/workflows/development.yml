@@ -3,15 +3,15 @@ on:
     branches:
       - development
 jobs:
-#  test:
-#    permissions:
-#      contents: read
-#      actions: read
-#    uses: ./.github/workflows/ci.yml
-#    secrets:
-#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  test:
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/ci.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
   deploy:
-#    needs: test
+    needs: test
     permissions:
       contents: read
       actions: write
