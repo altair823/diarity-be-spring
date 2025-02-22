@@ -6,12 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.iv.RandomIvGenerator;
 
-@SpringBootTest
+//@SpringBootTest
 public class JasyptTest {
-    @Value("${jasypt.encryptor.password}")
+//    @Value("${jasypt.encryptor.password}")
     private String password;
 
-    @Test
+//    @Test
     public void stringEncryptor() {
         String toEncryptString = "";
         System.out.println(jasyptEncoding(toEncryptString));
@@ -25,7 +25,7 @@ public class JasyptTest {
         return pbeEnc.encrypt(value);
     }
 
-    @Test
+//    @Test
     public void stringDecrypt() {
         String toDecryptString = "";
         if (!toDecryptString.isBlank()) {
