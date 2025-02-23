@@ -18,11 +18,6 @@ public class JwtUtils {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private int expiration;
-
-    @Value("${jwt.refreshExpiration}")
-    private int refreshExpiration;
 
 
     private SecretKey getKey(String secret) {
@@ -32,7 +27,8 @@ public class JwtUtils {
     public String generateToken(
             String username,
             String role,
-            String email
+            String email,
+            long expiration
     ) {
         Claims claims = Jwts.claims()
                 .add("username", username)
@@ -42,7 +38,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + expiration * 1000))
                 .signWith(getKey(secret))
                 .compact();
     }

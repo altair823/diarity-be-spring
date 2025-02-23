@@ -4,11 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +23,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final String[] excludePathPatterns = {
             "/index",
             "/auth/login/google",
-            "/auth/login/google/callback"
+            "/auth/login/google/callback",
+            "/auth/login/google/withaccesstoken"
     };
 
     @Override
@@ -32,9 +33,8 @@ public class JwtFilter extends OncePerRequestFilter {
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+        String token = getTokenFromCookies(request.getCookies());
+        if (token != null) {
             Jws<Claims> claims = jwtUtils.getClaims(token);
             String username = (String) claims.getPayload().get("username");
             String role = (String) claims.getPayload().get("role");
@@ -45,6 +45,17 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String getTokenFromCookies(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

@@ -22,7 +22,7 @@ public class JwtUtilsTest {
 
     @Test
     public void generateTokenSuccess() {
-        String token = jwtUtils.generateToken(username, role, email);
+        String token = jwtUtils.generateToken(username, role, email, 1000 * 60 * 60);
         Jws<Claims> claims = jwtUtils.getClaims(token);
         assertEquals(username, claims.getPayload().get("username"));
         assertEquals(role, claims.getPayload().get("role"));
@@ -31,7 +31,7 @@ public class JwtUtilsTest {
 
     @Test
     public void generateTokenSignatureFail() {
-        String token = jwtUtils.generateToken(username, role, email);
+        String token = jwtUtils.generateToken(username, role, email, 1000 * 60 * 60);
         token += "abcd";
         String finalToken = token;
         assertThrows(SignatureException.class, () -> jwtUtils.getClaims(finalToken));
@@ -41,8 +41,7 @@ public class JwtUtilsTest {
     public void generateTokenExpiredFail() {
         JwtUtils jwtUtils = new JwtUtils();
         jwtUtils.setSecret("testSecrettestSecrettestSecrettestSecrettestSecrettestSecret");
-        jwtUtils.setExpiration(-1000);
-        String token = jwtUtils.generateToken(username, role, email);
+        String token = jwtUtils.generateToken(username, role, email, 0);
         assertThrows(ExpiredJwtException.class, () -> jwtUtils.getClaims(token));
     }
 }

@@ -30,3 +30,5 @@ spring:
               - email
               - profile
               - openid
+
+redirect-after-login: http://localhost:3000
