@@ -28,8 +28,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Set environment variables
+        run: |
+          echo "JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
       - name: Run tests
-        run: ./gradlew test -Djasypt.encryptor.password=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} --info --stacktrace
+        run: ./gradlew test
 
       - name: Notify to Slack
         if: always()
