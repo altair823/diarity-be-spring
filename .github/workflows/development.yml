@@ -1,17 +1,18 @@
 on:
   push:
     branches:
-      - development
+      - development-disable
 jobs:
-#  test:
-#    permissions:
-#      contents: read
-#      actions: read
-#    uses: ./.github/workflows/ci.yml
-#    secrets:
-#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  test:
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/ci.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
   deploy:
-#    needs: test
+    needs: test
     permissions:
       contents: read
       actions: write
