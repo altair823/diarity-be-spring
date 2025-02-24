@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - production-disabled
+      - production-disable
 jobs:
 #  test:
 #    permissions:
