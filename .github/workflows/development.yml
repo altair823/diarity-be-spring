@@ -1,6 +1,7 @@
 on:
   push:
     branches:
+#     disable push event on development branch
       - development-disabled
 jobs:
   test:
