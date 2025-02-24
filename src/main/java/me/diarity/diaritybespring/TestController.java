@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @GetMapping("/index")
     public String index() {
-        return "Hello, World! version0.0.1 by Diarity";
+        return "Hello, World! version0.1.0 by Diarity";
     }
 }
