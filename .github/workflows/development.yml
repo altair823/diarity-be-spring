@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - development-disabled
+      - development-disable
 jobs:
   test:
     permissions:
