@@ -1,8 +1,6 @@
 package me.diarity.diaritybespring.auth;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +21,9 @@ public class JwtUtilsTest {
     @Test
     public void generateTokenSuccess() {
         String token = jwtUtils.generateToken(username, role, email, 1000 * 60 * 60);
-        Jws<Claims> claims = jwtUtils.getClaims(token);
-        assertEquals(username, claims.getPayload().get("username"));
-        assertEquals(role, claims.getPayload().get("role"));
-        assertEquals(email, claims.getPayload().get("email"));
+        assertEquals(username, jwtUtils.getUsername(token));
+        assertEquals(role, jwtUtils.getRole(token));
+        assertEquals(email, jwtUtils.getEmail(token));
     }
 
     @Test
@@ -34,7 +31,7 @@ public class JwtUtilsTest {
         String token = jwtUtils.generateToken(username, role, email, 1000 * 60 * 60);
         token += "abcd";
         String finalToken = token;
-        assertThrows(SignatureException.class, () -> jwtUtils.getClaims(finalToken));
+        assertThrows(SignatureException.class, () -> jwtUtils.getUsername(finalToken));
     }
 
     @Test
@@ -42,6 +39,6 @@ public class JwtUtilsTest {
         JwtUtils jwtUtils = new JwtUtils();
         jwtUtils.setSecret("testSecrettestSecrettestSecrettestSecrettestSecrettestSecret");
         String token = jwtUtils.generateToken(username, role, email, 0);
-        assertThrows(ExpiredJwtException.class, () -> jwtUtils.getClaims(token));
+        assertThrows(ExpiredJwtException.class, () -> jwtUtils.getUsername(token));
     }
 }

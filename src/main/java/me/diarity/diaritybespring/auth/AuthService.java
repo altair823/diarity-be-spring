@@ -130,7 +130,7 @@ public class AuthService {
     }
 
     public AuthResponse getStatus(String accessToken) {
-        UsersResponse usersResponse = usersService.findByEmail((String) jwtUtils.getClaims(accessToken).getPayload().get("email"));
+        UsersResponse usersResponse = usersService.findByEmail(jwtUtils.getEmail(accessToken));
         return AuthResponse.builder()
                 .status("success")
                 .user(usersResponse)
