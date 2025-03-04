@@ -40,4 +40,12 @@ public class Posts {
     private Instant deletedAt;
     private Integer likesCount;
     private Integer commentsCount;
+
+    public void like() {
+        this.likesCount++;
+    }
+
+    public void dislike() {
+        this.likesCount--;
+    }
 }

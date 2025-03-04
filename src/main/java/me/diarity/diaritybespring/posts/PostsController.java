@@ -22,4 +22,14 @@ public class PostsController {
     public PostsResponse create(@RequestBody PostsCreateRequest postsCreateRequest) {
         return postsService.create(postsCreateRequest);
     }
+
+    @GetMapping("/{id}")
+    public PostsResponse getPostById(@PathVariable Long id) {
+        return postsService.getPostById(id);
+    }
+
+    @PostMapping("/{id}/like")
+    public PostsResponse like(@PathVariable Long id) {
+        return postsService.like(id);
+    }
 }

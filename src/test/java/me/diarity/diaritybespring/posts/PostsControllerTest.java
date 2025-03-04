@@ -139,4 +139,78 @@ public class PostsControllerTest {
         assertThat(createdPostsResponse.getLikesCount()).isEqualTo(0);
         assertThat(createdPostsResponse.getCommentsCount()).isEqualTo(0);
     }
+
+    @Test
+    public void getPostById() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        PostsResponse postsResponse = PostsResponse.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .commentsCount(0)
+                .build();
+        when(postsService.getPostById(1L)).thenReturn(postsResponse);
+
+        // when
+        PostsResponse postById = postsController.getPostById(1L);
+
+        // then
+        assertThat(postById.getId()).isEqualTo(1L);
+        assertThat(postById.getTitle()).isEqualTo("testTitle");
+        assertThat(postById.getContent()).isEqualTo("testContent");
+        assertThat(postById.getAuthor().getEmail()).isEqualTo(author.getEmail());
+        assertThat(postById.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(postById.getModifiedAt()).isEqualTo(postModifiedAt);
+        assertThat(postById.getIsPublic()).isEqualTo(true);
+        assertThat(postById.getIsDeleted()).isEqualTo(false);
+        assertThat(postById.getDeletedAt()).isNull();
+        assertThat(postById.getLikesCount()).isEqualTo(0);
+        assertThat(postById.getCommentsCount()).isEqualTo(0);
+    }
+
+    @Test
+    public void like() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        PostsResponse postsResponse = PostsResponse.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(1)
+                .commentsCount(0)
+                .build();
+        when(postsService.like(1L)).thenReturn(postsResponse);
+
+        // when
+        PostsResponse likedPostsResponse = postsController.like(1L);
+
+        // then
+        assertThat(likedPostsResponse.getId()).isEqualTo(1L);
+        assertThat(likedPostsResponse.getTitle()).isEqualTo("testTitle");
+        assertThat(likedPostsResponse.getContent()).isEqualTo("testContent");
+        assertThat(likedPostsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
+        assertThat(likedPostsResponse.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(likedPostsResponse.getModifiedAt()).isEqualTo(postModifiedAt);
+        assertThat(likedPostsResponse.getIsPublic()).isEqualTo(true);
+        assertThat(likedPostsResponse.getIsDeleted()).isEqualTo(false);
+        assertThat(likedPostsResponse.getDeletedAt()).isNull();
+        assertThat(likedPostsResponse.getLikesCount()).isEqualTo(1);
+        assertThat(likedPostsResponse.getCommentsCount()).isEqualTo(0);
+    }
 }

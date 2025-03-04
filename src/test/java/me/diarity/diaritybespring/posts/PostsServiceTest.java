@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -142,5 +143,120 @@ public class PostsServiceTest {
         assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
         assertThat(postsResponse.getLikesCount()).isEqualTo(posts.getLikesCount());
         assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+    }
+
+    @Test
+    public void createFail() {
+        // given
+        PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
+                .title("testTitle")
+                .content("testContent")
+                .authorEmail(author.getEmail())
+                .build();
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.create(postsCreateRequest));
+        assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
+    }
+
+    @Test
+    public void getPostById() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        Posts posts = Posts.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .commentsCount(0)
+                .build();
+        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+
+        // when
+        PostsResponse postsResponse = postsService.getPostById(1L);
+
+        // then
+        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
+        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
+        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
+        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
+        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
+        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
+        assertThat(postsResponse.getLikesCount()).isEqualTo(posts.getLikesCount());
+        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+    }
+
+    @Test
+    public void getPostByIdFail() {
+        // given
+        when(postsRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.getPostById(1L));
+        assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
+    }
+
+    @Test
+    public void like() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        int initialLikesCount = 0;
+        Posts posts = Posts.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(initialLikesCount)
+                .commentsCount(0)
+                .build();
+        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+        when(postsRepository.save(any())).thenReturn(posts);
+
+        // when
+        PostsResponse postsResponse = postsService.like(1L);
+
+        // then
+        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
+        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
+        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
+        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
+        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
+        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
+        assertThat(postsResponse.getLikesCount()).isEqualTo(initialLikesCount + 1);
+        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+    }
+
+    @Test
+    public void likeFail() {
+        // given
+        when(postsRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.like(1L));
+        assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
     }
 }
