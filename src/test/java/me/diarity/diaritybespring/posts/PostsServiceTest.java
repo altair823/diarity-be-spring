@@ -2,12 +2,20 @@ package me.diarity.diaritybespring.posts;
 
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
+import me.diarity.diaritybespring.posts.likes.LikesService;
+import me.diarity.diaritybespring.posts.likes.dto.LikesRequest;
+import me.diarity.diaritybespring.posts.likes.dto.LikesResponse;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -23,9 +31,10 @@ import static org.mockito.Mockito.when;
 public class PostsServiceTest {
     @Mock
     private PostsRepository postsRepository;
-
     @Mock
     private UsersRepository usersRepository;
+    @Mock
+    private LikesService likesService;
 
     @InjectMocks
     private PostsService postsService;
@@ -38,6 +47,19 @@ public class PostsServiceTest {
             .role("NORMAL")
             .displayName("testUser")
             .build();
+
+    @BeforeEach
+    public void setUp() {
+        // Create a mock Authentication object
+        Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(author.getEmail());
+
+        // Create a mock SecurityContext object
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+    }
 
     @Test
     public void getAll() {
@@ -126,11 +148,10 @@ public class PostsServiceTest {
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
-                .authorEmail(author.getEmail())
                 .build();
 
         // when
-        PostsResponse postsResponse = postsService.create(postsCreateRequest);
+        PostsResponse postsResponse = postsService.create(postsCreateRequest, author.getEmail());
 
         // then
         assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
@@ -151,14 +172,13 @@ public class PostsServiceTest {
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
-                .authorEmail(author.getEmail())
                 .build();
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.empty());
 
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.create(postsCreateRequest));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.create(postsCreateRequest, author.getEmail()));
         assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
     }
 
@@ -231,9 +251,17 @@ public class PostsServiceTest {
                 .build();
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(postsRepository.save(any())).thenReturn(posts);
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
+        when(likesService.like(LikesRequest.builder()
+                        .post(posts)
+                        .user(author)
+                        .build())).thenReturn(Optional.of(LikesResponse.builder()
+                .postId(posts.getId())
+                .userId(author.getId())
+                .build()));
 
         // when
-        PostsResponse postsResponse = postsService.like(1L);
+        PostsResponse postsResponse = postsService.like(1L, author.getEmail());
 
         // then
         assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
@@ -256,7 +284,40 @@ public class PostsServiceTest {
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.like(1L));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.like(1L, any()));
         assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
+    }
+
+    @Test
+    public void likeDuplicate() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        int initialLikesCount = 0;
+        Posts posts = Posts.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(initialLikesCount)
+                .commentsCount(0)
+                .build();
+        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
+        when(likesService.like(LikesRequest.builder()
+                        .post(posts)
+                        .user(author)
+                        .build())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.like(1L, author.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("이미 좋아요를 누른 게시글입니다.");
     }
 }

@@ -22,6 +22,8 @@ public class Posts {
     private Long id;
 
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @CreatedBy
@@ -41,11 +43,11 @@ public class Posts {
     private Integer likesCount;
     private Integer commentsCount;
 
-    public void like() {
+    public void addLike() {
         this.likesCount++;
     }
 
-    public void dislike() {
+    public void removeLike() {
         this.likesCount--;
     }
 }

@@ -3,15 +3,21 @@ package me.diarity.diaritybespring.posts;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -30,6 +36,19 @@ public class PostsControllerTest {
             .role("NORMAL")
             .displayName("testUser")
             .build();
+
+    @BeforeEach
+    public void setUp() {
+        // Create a mock Authentication object
+        Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(author.getEmail());
+
+        // Create a mock SecurityContext object
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+    }
 
     @Test
     public void getAll() {
@@ -119,9 +138,8 @@ public class PostsControllerTest {
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
-                .authorEmail(author.getEmail())
                 .build();
-        when(postsService.create(postsCreateRequest)).thenReturn(postsResponse);
+        when(postsService.create(postsCreateRequest, author.getEmail())).thenReturn(postsResponse);
 
         // when
         PostsResponse createdPostsResponse = postsController.create(postsCreateRequest);
@@ -195,7 +213,7 @@ public class PostsControllerTest {
                 .likesCount(1)
                 .commentsCount(0)
                 .build();
-        when(postsService.like(1L)).thenReturn(postsResponse);
+        when(postsService.like(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when
         PostsResponse likedPostsResponse = postsController.like(1L);
@@ -212,5 +230,18 @@ public class PostsControllerTest {
         assertThat(likedPostsResponse.getDeletedAt()).isNull();
         assertThat(likedPostsResponse.getLikesCount()).isEqualTo(1);
         assertThat(likedPostsResponse.getCommentsCount()).isEqualTo(0);
+    }
+
+    @Test
+    public void likeDuplicate() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        when(postsService.like(1L, author.getEmail())).thenThrow(new IllegalArgumentException("이미 좋아요를 누른 게시글입니다."));
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> postsController.like(1L));
     }
 }

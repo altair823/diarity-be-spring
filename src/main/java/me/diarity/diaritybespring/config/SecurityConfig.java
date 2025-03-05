@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/auth/login/google",
                                 "/auth/login/google/callback",
                                 "/auth/login/google/withaccesstoken",
-                                "auth/status"
+                                "/auth/status",
+                                "/posts/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
