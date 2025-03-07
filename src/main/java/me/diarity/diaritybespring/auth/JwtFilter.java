@@ -22,7 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "/index",
             "/auth/login/google",
             "/auth/login/google/callback",
-            "/auth/login/google/withaccesstoken"
+            "/auth/login/google/withaccesstoken",
     };
 
     @Override
@@ -33,7 +33,6 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = getTokenFromCookies(request.getCookies());
         if (token != null) {
-            String username = jwtUtils.getUsername(token);
             String role = jwtUtils.getRole(token);
             String email = jwtUtils.getEmail(token);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
