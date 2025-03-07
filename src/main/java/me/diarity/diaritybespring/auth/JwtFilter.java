@@ -1,7 +1,5 @@
 package me.diarity.diaritybespring.auth;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -24,7 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "/index",
             "/auth/login/google",
             "/auth/login/google/callback",
-            "/auth/login/google/withaccesstoken"
+            "/auth/login/google/withaccesstoken",
     };
 
     @Override
@@ -35,13 +33,15 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = getTokenFromCookies(request.getCookies());
         if (token != null) {
-            Jws<Claims> claims = jwtUtils.getClaims(token);
-            String username = (String) claims.getPayload().get("username");
-            String role = (String) claims.getPayload().get("role");
-            String email = (String) claims.getPayload().get("email");
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, Collections.singleton(
-                    new SimpleGrantedAuthority(role)
-            ));
+            String role = jwtUtils.getRole(token);
+            String email = jwtUtils.getEmail(token);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    email,
+                    null,
+                    Collections.singleton(
+                            new SimpleGrantedAuthority(role)
+                    )
+            );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         filterChain.doFilter(request, response);

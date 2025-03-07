@@ -18,8 +18,6 @@ public class JwtUtils {
     @Value("${jwt.secret}")
     private String secret;
 
-
-
     private SecretKey getKey(String secret) {
         byte[] keyByte = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyByte);
@@ -43,10 +41,22 @@ public class JwtUtils {
                 .compact();
     }
 
-    public Jws<Claims> getClaims(String token) {
+    private Jws<Claims> getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getKey(secret))
                 .build()
                 .parseSignedClaims(token);
+    }
+
+    public String getUsername(String token) {
+        return getClaims(token).getPayload().get("username", String.class);
+    }
+
+    public String getRole(String token) {
+        return getClaims(token).getPayload().get("role", String.class);
+    }
+
+    public String getEmail(String token) {
+        return getClaims(token).getPayload().get("email", String.class);
     }
 }
