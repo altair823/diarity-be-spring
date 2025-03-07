@@ -19,11 +19,25 @@ public class PostsService {
     private final UsersRepository usersRepository;
     private final LikesService likesService;
 
-    public List<PostsResponse> getAll() {
-        List<Posts> posts = postsRepository.findAllByOrderByCreatedAtDesc();
+    public List<PostsResponse> getAll(String userEmail) {
+        if (userEmail.equals("anonymousUser")) {
+            List<Posts> posts = postsRepository.findAllByOrderByCreatedAtDesc();
+            PostsMapper postsMapper = PostsMapper.INSTANCE;
+            return posts.stream().map(postsMapper::toResponse).toList();
+        } else {
+            Users user = usersRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+            List<Object[]> posts = postsRepository.findAllByOrderByCreatedAtDescWithLiked(user.getId());
+            PostsMapper postsMapper = PostsMapper.INSTANCE;
+            return posts.stream().map(
+                    post -> {
+                        PostsResponse postsResponse = postsMapper.toResponse((Posts) post[0]);
+                        postsResponse.setIsLiked((Boolean) post[1]);
+                        return postsResponse;
+                    }
 
-        PostsMapper postsMapper = PostsMapper.INSTANCE;
-        return posts.stream().map(postsMapper::toResponse).toList();
+            ).toList();
+        }
     }
 
     public PostsResponse create(PostsCreateRequest postsCreateRequest, String userEmail) {
@@ -51,7 +65,23 @@ public class PostsService {
                         .build()
         ).orElseThrow(() -> new IllegalArgumentException("이미 좋아요를 누른 게시글입니다."));
         posts.addLike();
-        postsRepository.save(posts);
+        posts = postsRepository.save(posts);
+        return PostsMapper.INSTANCE.toResponse(posts);
+    }
+
+    public PostsResponse unlike(Long id, String string) {
+        Posts posts = postsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        Users user = usersRepository.findByEmail(string)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+        likesService.unlike(
+                LikesRequest.builder()
+                        .post(posts)
+                        .user(user)
+                        .build()
+        ).orElseThrow(() -> new IllegalArgumentException("좋아요를 누르지 않은 게시글입니다."));
+        posts.removeLike();
+        posts = postsRepository.save(posts);
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 }

@@ -20,7 +20,8 @@ public interface PostsMapper {
             @Mapping(target = "author", source = "author"),
             @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "modifiedAt", source = "modifiedAt", qualifiedByName = "mapInstantToLocalDateTime"),
-            @Mapping(target = "deletedAt", source = "deletedAt", qualifiedByName = "mapInstantToLocalDateTime")
+            @Mapping(target = "deletedAt", source = "deletedAt", qualifiedByName = "mapInstantToLocalDateTime"),
+            @Mapping(target = "isLiked", ignore = true)
     })
     PostsResponse toResponse(Posts posts);
 

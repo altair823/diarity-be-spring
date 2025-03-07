@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Setter;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
+@Setter
 public class PostsResponse {
     @NonNull
     private Long id; // 나중에 확인해보고 필요없으면 지울 것
@@ -35,4 +37,5 @@ public class PostsResponse {
     private Integer likesCount;
     @NonNull
     private Integer commentsCount;
+    private Boolean isLiked;
 }
