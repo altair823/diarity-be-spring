@@ -50,4 +50,12 @@ public class Posts {
     public void removeLike() {
         this.likesCount--;
     }
+
+    public void addComment() {
+        this.commentsCount++;
+    }
+
+    public void removeComment() {
+        this.commentsCount--;
+    }
 }

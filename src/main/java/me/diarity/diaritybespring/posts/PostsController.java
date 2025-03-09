@@ -1,6 +1,8 @@
 package me.diarity.diaritybespring.posts;
 
 import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import org.springframework.security.core.Authentication;
@@ -45,5 +47,11 @@ public class PostsController {
     public PostsResponse unlike(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return postsService.unlike(id, authentication.getPrincipal().toString());
+    }
+
+    @PostMapping("/{id}/comments")
+    public CommentsResponse createComment(@PathVariable Long id, @RequestBody CommentsCreateRequest commentsCreateRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.createComment(commentsCreateRequest, authentication.getPrincipal().toString(), id);
     }
 }

@@ -13,6 +13,7 @@ import me.diarity.diaritybespring.posts.comments.repository.CommentsRepository;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +23,14 @@ public class CommentsService {
     private final UsersRepository usersRepository;
     private final PostsRepository postsRepository;
 
+    @Transactional
     public CommentsResponse create(CommentsCreateRequest commentsCreateRequest, String email, Long postId) {
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
         Posts post = postsRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        post.addComment();
+        post = postsRepository.save(post);
         Comments comment = commentRepository.save(CommentsMapper.INSTANCE.toEntity(
                 commentsCreateRequest,
                 user,

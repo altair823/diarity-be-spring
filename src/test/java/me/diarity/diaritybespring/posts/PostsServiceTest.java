@@ -1,5 +1,8 @@
 package me.diarity.diaritybespring.posts;
 
+import me.diarity.diaritybespring.posts.comments.CommentsService;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import me.diarity.diaritybespring.posts.likes.LikesService;
@@ -35,6 +38,8 @@ public class PostsServiceTest {
     private UsersRepository usersRepository;
     @Mock
     private LikesService likesService;
+    @Mock
+    private CommentsService commentsService;
 
     @InjectMocks
     private PostsService postsService;
@@ -435,5 +440,131 @@ public class PostsServiceTest {
         assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
         assertThat(postsResponse.getLikesCount()).isEqualTo(0);
         assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+    }
+
+    @Test
+    public void unlikeFail() {
+        // given
+        when(postsRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.unlike(1L, any()));
+        assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
+    }
+
+    @Test
+    public void unlikeNotLikedFail() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        int initialLikesCount = 0;
+        Posts posts = Posts.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(initialLikesCount)
+                .commentsCount(0)
+                .build();
+        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
+        when(likesService.unlike(LikesRequest.builder()
+                        .post(posts)
+                        .user(author)
+                        .build())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.unlike(1L, author.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("좋아요를 누르지 않은 게시글입니다.");
+    }
+
+    @Test
+    public void createComment() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(2L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .modifiedAt(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .build();
+        CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
+                .content("testContent")
+                .build();
+        when(commentsService.create(commentsCreateRequest, author.getEmail(), 1L)).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse commentsResponseResult = postsService.createComment(commentsCreateRequest, author.getEmail(), 1L);
+
+        // then
+        assertThat(commentsResponseResult.getId()).isEqualTo(commentsResponse.getId());
+        assertThat(commentsResponseResult.getUserId()).isEqualTo(commentsResponse.getUserId());
+        assertThat(commentsResponseResult.getDisplayName()).isEqualTo(commentsResponse.getDisplayName());
+        assertThat(commentsResponseResult.getPicture()).isEqualTo(commentsResponse.getPicture());
+        assertThat(commentsResponseResult.getContent()).isEqualTo(commentsResponse.getContent());
+        assertThat(commentsResponseResult.getLikesCount()).isEqualTo(commentsResponse.getLikesCount());
+        assertThat(commentsResponseResult.getIsLiked()).isEqualTo(commentsResponse.getIsLiked());
+        assertThat(commentsResponseResult.getPostId()).isEqualTo(commentsResponse.getPostId());
+        assertThat(commentsResponseResult.getParentCommentId()).isEqualTo(commentsResponse.getParentCommentId());
+        assertThat(commentsResponseResult.getCreatedAt()).isEqualTo(commentsResponse.getCreatedAt());
+        assertThat(commentsResponseResult.getModifiedAt()).isEqualTo(commentsResponse.getModifiedAt());
+    }
+
+    @Test
+    public void createCommentWithParentComment() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(2L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(1L)
+                .createdAt(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .modifiedAt(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .build();
+        CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
+                .content("testContent")
+                .parentCommentId(1L)
+                .build();
+        when(commentsService.create(commentsCreateRequest, author.getEmail(), 1L)).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse commentsResponseResult = postsService.createComment(commentsCreateRequest, author.getEmail(), 1L);
+
+        // then
+        assertThat(commentsResponseResult.getId()).isEqualTo(commentsResponse.getId());
+        assertThat(commentsResponseResult.getUserId()).isEqualTo(commentsResponse.getUserId());
+        assertThat(commentsResponseResult.getDisplayName()).isEqualTo(commentsResponse.getDisplayName());
+        assertThat(commentsResponseResult.getPicture()).isEqualTo(commentsResponse.getPicture());
+        assertThat(commentsResponseResult.getContent()).isEqualTo(commentsResponse.getContent());
+        assertThat(commentsResponseResult.getLikesCount()).isEqualTo(commentsResponse.getLikesCount());
+        assertThat(commentsResponseResult.getIsLiked()).isEqualTo(commentsResponse.getIsLiked());
+        assertThat(commentsResponseResult.getPostId()).isEqualTo(commentsResponse.getPostId());
+        assertThat(commentsResponseResult.getParentCommentId()).isEqualTo(commentsResponse.getParentCommentId());
+        assertThat(commentsResponseResult.getCreatedAt()).isEqualTo(commentsResponse.getCreatedAt());
+        assertThat(commentsResponseResult.getModifiedAt()).isEqualTo(commentsResponse.getModifiedAt());
     }
 }

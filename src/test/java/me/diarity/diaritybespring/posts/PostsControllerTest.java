@@ -1,5 +1,7 @@
 package me.diarity.diaritybespring.posts;
 
+import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
@@ -290,5 +292,85 @@ public class PostsControllerTest {
         // then
         // throws IllegalArgumentException
         assertThrows(IllegalArgumentException.class, () -> postsController.unlike(1L));
+    }
+
+    @Test
+    public void createComment() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
+                .content("testContent")
+                .build();
+        CommentsResponse postsResponse = CommentsResponse.builder()
+                .id(2L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .build();
+        when(postsService.createComment(commentsCreateRequest, author.getEmail(), 1L)).thenReturn(postsResponse);
+
+        // when
+        CommentsResponse createdCommentResponse = postsController.createComment(1L, commentsCreateRequest);
+
+        // then
+        assertThat(createdCommentResponse.getId()).isEqualTo(2L);
+        assertThat(createdCommentResponse.getUserId()).isEqualTo(author.getId());
+        assertThat(createdCommentResponse.getDisplayName()).isEqualTo(author.getDisplayName());
+        assertThat(createdCommentResponse.getPicture()).isEqualTo(author.getPicture());
+        assertThat(createdCommentResponse.getContent()).isEqualTo("testContent");
+        assertThat(createdCommentResponse.getLikesCount()).isEqualTo(0);
+        assertThat(createdCommentResponse.getIsLiked()).isFalse();
+        assertThat(createdCommentResponse.getPostId()).isEqualTo(1L);
+        assertThat(createdCommentResponse.getParentCommentId()).isNull();
+        assertThat(createdCommentResponse.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(createdCommentResponse.getModifiedAt()).isEqualTo(postModifiedAt);
+    }
+
+    @Test
+    public void createCommentWithParentComment() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
+                .content("testContent")
+                .build();
+        CommentsResponse postsResponse = CommentsResponse.builder()
+                .id(2L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(1L)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .build();
+        when(postsService.createComment(commentsCreateRequest, author.getEmail(), 1L)).thenReturn(postsResponse);
+
+        // when
+        CommentsResponse createdCommentResponse = postsController.createComment(1L, commentsCreateRequest);
+
+        // then
+        assertThat(createdCommentResponse.getId()).isEqualTo(2L);
+        assertThat(createdCommentResponse.getUserId()).isEqualTo(author.getId());
+        assertThat(createdCommentResponse.getDisplayName()).isEqualTo(author.getDisplayName());
+        assertThat(createdCommentResponse.getPicture()).isEqualTo(author.getPicture());
+        assertThat(createdCommentResponse.getContent()).isEqualTo("testContent");
+        assertThat(createdCommentResponse.getLikesCount()).isEqualTo(0);
+        assertThat(createdCommentResponse.getIsLiked()).isFalse();
+        assertThat(createdCommentResponse.getPostId()).isEqualTo(1L);
+        assertThat(createdCommentResponse.getParentCommentId()).isEqualTo(1L);
+        assertThat(createdCommentResponse.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(createdCommentResponse.getModifiedAt()).isEqualTo(postModifiedAt);
     }
 }
