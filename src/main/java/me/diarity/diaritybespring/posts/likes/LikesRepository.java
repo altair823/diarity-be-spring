@@ -1,5 +1,6 @@
 package me.diarity.diaritybespring.posts.likes;
 
+import me.diarity.diaritybespring.posts.likes.dto.LikesId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

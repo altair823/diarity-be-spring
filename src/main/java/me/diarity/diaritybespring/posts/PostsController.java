@@ -32,7 +32,7 @@ public class PostsController {
 
     @GetMapping("/{id}")
     public PostsResponse getPostById(@PathVariable Long id) {
-        return postsService.getPostById(id);
+        return postsService.findById(id);
     }
 
     @PostMapping("/{id}/like")

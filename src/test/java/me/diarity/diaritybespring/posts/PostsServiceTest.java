@@ -253,7 +253,7 @@ public class PostsServiceTest {
     }
 
     @Test
-    public void getPostById() {
+    public void findById() {
         // given
         Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
         Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
@@ -273,7 +273,7 @@ public class PostsServiceTest {
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
 
         // when
-        PostsResponse postsResponse = postsService.getPostById(1L);
+        PostsResponse postsResponse = postsService.findById(1L);
 
         // then
         assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
@@ -289,14 +289,14 @@ public class PostsServiceTest {
     }
 
     @Test
-    public void getPostByIdFail() {
+    public void findByIdFail() {
         // given
         when(postsRepository.findById(1L)).thenReturn(Optional.empty());
 
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.getPostById(1L));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.findById(1L));
         assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
     }
 

@@ -177,7 +177,7 @@ public class PostsControllerTest {
                 .likesCount(0)
                 .commentsCount(0)
                 .build();
-        when(postsService.getPostById(1L)).thenReturn(postsResponse);
+        when(postsService.findById(1L)).thenReturn(postsResponse);
 
         // when
         PostsResponse postById = postsController.getPostById(1L);

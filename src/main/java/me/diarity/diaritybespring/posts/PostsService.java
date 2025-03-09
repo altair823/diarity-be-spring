@@ -47,7 +47,7 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
-    public PostsResponse getPostById(Long id) {
+    public PostsResponse findById(Long id) {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         return PostsMapper.INSTANCE.toResponse(posts);
