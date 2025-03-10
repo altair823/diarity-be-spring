@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.diarity.diaritybespring.posts.Posts;
 import me.diarity.diaritybespring.posts.PostsRepository;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsHierarchyId;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsMapper;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.comments.entity.Comments;
@@ -43,11 +44,16 @@ public class CommentsService {
         if (parentCommentId != null) {
             Comments parentComment = commentRepository.findById(parentCommentId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-            commentsHierarchyRepository.save(
+            CommentsHierarchy commentsHierarchy =
                     CommentsHierarchy.builder()
+                            .id(CommentsHierarchyId.builder()
+                                    .parentCommentId(parentComment.getId())
+                                    .childCommentId(comment.getId())
+                                    .build())
                             .parentComment(parentComment)
                             .childComment(comment)
-                            .build());
+                            .build();
+            commentsHierarchyRepository.save(commentsHierarchy);
         }
 
         CommentsResponse commentsResponse = CommentsMapper.INSTANCE.toResponse(comment);
