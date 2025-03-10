@@ -55,6 +55,9 @@ public class SecurityConfig {
                                 "/posts",
                                 "/posts/**"
                         ).permitAll()
+                        .requestMatchers(
+                                "/posts/{id}/new-comments"
+                        ).authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable
