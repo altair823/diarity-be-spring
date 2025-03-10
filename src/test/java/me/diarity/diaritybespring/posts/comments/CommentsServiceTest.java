@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -246,5 +247,97 @@ public class CommentsServiceTest {
         // throws IllegalArgumentException
         IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> commentsService.create(commentsCreateRequest, user.getEmail(), post.getId()));
         assertThat(e.getMessage()).isEqualTo("댓글 계층 저장에 실패했습니다.");
+    }
+
+    @Test
+    public void findAll() {
+        // given
+        Instant createdAt = Instant.ofEpochMilli(1612310400000L);
+        Instant modifiedAt = Instant.ofEpochMilli(1612396800000L);
+        Comments comment2 = Comments.builder()
+                .id(4L)
+                .content("testComment2")
+                .author(user)
+                .post(post)
+                .createdAt(createdAt)
+                .modifiedAt(modifiedAt)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .build();
+        Instant createdAtChild = Instant.ofEpochMilli(1612489600000L);
+        Instant modifiedAtChild = Instant.ofEpochMilli(1612576000000L);
+        Comments childComment = Comments.builder()
+                .id(5L)
+                .content("testChildComment")
+                .author(user)
+                .post(post)
+                .createdAt(createdAtChild)
+                .modifiedAt(modifiedAtChild)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .build();
+        when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(commentsRepository.findAllByPostId(post.getId())).thenReturn(List.of(
+                comment,
+                comment2,
+                childComment
+        ));
+        when(commentsHierarchyRepository.findParentCommentIdByChildCommentId(childComment.getId()))
+                .thenReturn(Optional.ofNullable(comment2.getId()));
+
+        // when
+        List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId());
+
+        // then
+        assertThat(commentsResponses.size()).isEqualTo(3);
+        assertThat(commentsResponses.getFirst().getId()).isEqualTo(comment.getId());
+        assertThat(commentsResponses.getFirst().getUserId()).isEqualTo(user.getId());
+        assertThat(commentsResponses.getFirst().getDisplayName()).isEqualTo(user.getDisplayName());
+        assertThat(commentsResponses.getFirst().getPicture()).isEqualTo(user.getPicture());
+        assertThat(commentsResponses.getFirst().getContent()).isEqualTo(comment.getContent());
+        assertThat(commentsResponses.getFirst().getLikesCount()).isEqualTo(comment.getLikesCount());
+        assertThat(commentsResponses.getFirst().getIsLiked()).isFalse();
+        assertThat(commentsResponses.getFirst().getPostId()).isEqualTo(post.getId());
+        assertThat(commentsResponses.getFirst().getParentCommentId()).isNull();
+        assertThat(commentsResponses.getFirst().getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getCreatedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponses.getFirst().getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getModifiedAt(), ZoneOffset.systemDefault()));
+
+        assertThat(commentsResponses.get(1).getId()).isEqualTo(comment2.getId());
+        assertThat(commentsResponses.get(1).getUserId()).isEqualTo(user.getId());
+        assertThat(commentsResponses.get(1).getDisplayName()).isEqualTo(user.getDisplayName());
+        assertThat(commentsResponses.get(1).getPicture()).isEqualTo(user.getPicture());
+        assertThat(commentsResponses.get(1).getContent()).isEqualTo(comment2.getContent());
+        assertThat(commentsResponses.get(1).getLikesCount()).isEqualTo(comment2.getLikesCount());
+        assertThat(commentsResponses.get(1).getIsLiked()).isFalse();
+        assertThat(commentsResponses.get(1).getPostId()).isEqualTo(post.getId());
+        assertThat(commentsResponses.get(1).getParentCommentId()).isNull();
+        assertThat(commentsResponses.get(1).getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment2.getCreatedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponses.get(1).getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment2.getModifiedAt(), ZoneOffset.systemDefault()));
+
+        assertThat(commentsResponses.getLast().getId()).isEqualTo(childComment.getId());
+        assertThat(commentsResponses.getLast().getUserId()).isEqualTo(user.getId());
+        assertThat(commentsResponses.getLast().getDisplayName()).isEqualTo(user.getDisplayName());
+        assertThat(commentsResponses.getLast().getPicture()).isEqualTo(user.getPicture());
+        assertThat(commentsResponses.getLast().getContent()).isEqualTo(childComment.getContent());
+        assertThat(commentsResponses.getLast().getLikesCount()).isEqualTo(childComment.getLikesCount());
+        assertThat(commentsResponses.getLast().getIsLiked()).isFalse();
+        assertThat(commentsResponses.getLast().getPostId()).isEqualTo(post.getId());
+        assertThat(commentsResponses.getLast().getParentCommentId()).isEqualTo(comment2.getId());
+        assertThat(commentsResponses.getLast().getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(childComment.getCreatedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponses.getLast().getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(childComment.getModifiedAt(), ZoneOffset.systemDefault()));
+    }
+
+    @Test
+    public void findAllFailToFindPost() {
+        // given
+        when(postsRepository.findById(post.getId())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> commentsService.findAll(post.getId()));
+        assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
     }
 }

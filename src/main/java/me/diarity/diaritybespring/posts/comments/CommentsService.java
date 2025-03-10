@@ -15,6 +15,8 @@ import me.diarity.diaritybespring.users.UsersRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CommentsService {
@@ -50,5 +52,18 @@ public class CommentsService {
         CommentsResponse commentsResponse = CommentsMapper.INSTANCE.toResponse(comment);
         commentsResponse.setParentCommentId(parentCommentId);
         return commentsResponse;
+    }
+
+    public List<CommentsResponse> findAll(Long postId) {
+        postsRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        List<Comments> comments = commentRepository.findAllByPostId(postId);
+        return comments.stream().map(comment -> {
+            CommentsResponse commentsResponse = CommentsMapper.INSTANCE.toResponse(comment);
+            Long parentCommentId = commentsHierarchyRepository.findParentCommentIdByChildCommentId(comment.getId())
+                    .orElse(null);
+            commentsResponse.setParentCommentId(parentCommentId);
+            return commentsResponse;
+        }).toList();
     }
 }
