@@ -16,6 +16,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class Comments {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

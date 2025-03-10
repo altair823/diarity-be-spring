@@ -3,6 +3,7 @@ package me.diarity.diaritybespring.posts.comments;
 import me.diarity.diaritybespring.posts.Posts;
 import me.diarity.diaritybespring.posts.PostsRepository;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsHierarchyId;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.comments.entity.Comments;
 import me.diarity.diaritybespring.posts.comments.entity.CommentsHierarchy;
@@ -278,14 +279,22 @@ public class CommentsServiceTest {
                 .deletedAt(null)
                 .likesCount(0)
                 .build();
+        CommentsHierarchy commentsHierarchy = CommentsHierarchy.builder()
+                .id(new CommentsHierarchyId(
+                        comment2.getId(),
+                        childComment.getId()
+                ))
+                .parentComment(comment2)
+                .childComment(childComment)
+                .build();
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(commentsRepository.findAllByPostId(post.getId())).thenReturn(List.of(
                 comment,
                 comment2,
                 childComment
         ));
-        when(commentsHierarchyRepository.findParentCommentIdByChildCommentId(childComment.getId()))
-                .thenReturn(Optional.ofNullable(comment2.getId()));
+        when(commentsHierarchyRepository.findByChildCommentId(childComment.getId()))
+                .thenReturn(Optional.ofNullable(commentsHierarchy));
 
         // when
         List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId());

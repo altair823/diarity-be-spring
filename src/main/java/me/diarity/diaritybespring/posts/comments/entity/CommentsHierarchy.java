@@ -3,10 +3,12 @@ package me.diarity.diaritybespring.posts.comments.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsHierarchyId;
 
 @Entity
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

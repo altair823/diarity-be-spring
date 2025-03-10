@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface CommentsHierarchyRepository extends JpaRepository<CommentsHierarchy, CommentsHierarchyId> {
-    Optional<Long> findParentCommentIdByChildCommentId(Long childCommentId);
+    Optional<CommentsHierarchy> findByChildCommentId(Long childCommentId);
 }

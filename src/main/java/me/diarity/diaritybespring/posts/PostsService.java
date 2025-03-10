@@ -92,4 +92,8 @@ public class PostsService {
     public CommentsResponse createComment(CommentsCreateRequest commentsCreateRequest, String userEmail, Long postId) {
         return commentsService.create(commentsCreateRequest, userEmail, postId);
     }
+
+    public List<CommentsResponse> findAllComments(Long postId) {
+        return commentsService.findAll(postId);
+    }
 }

@@ -49,9 +49,14 @@ public class PostsController {
         return postsService.unlike(id, authentication.getPrincipal().toString());
     }
 
-    @PostMapping("/{id}/comments")
+    @PostMapping("/{id}/new-comments")
     public CommentsResponse createComment(@PathVariable Long id, @RequestBody CommentsCreateRequest commentsCreateRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return postsService.createComment(commentsCreateRequest, authentication.getPrincipal().toString(), id);
+    }
+
+    @GetMapping("/{id}/comments")
+    public List<CommentsResponse> getComments(@PathVariable Long id) {
+        return postsService.findAllComments(id);
     }
 }

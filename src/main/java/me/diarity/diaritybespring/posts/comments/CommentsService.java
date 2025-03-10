@@ -33,11 +33,12 @@ public class CommentsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         post.addComment();
         post = postsRepository.save(post);
-        Comments comment = commentRepository.save(CommentsMapper.INSTANCE.toEntity(
+        Comments comment = CommentsMapper.INSTANCE.toEntity(
                 commentsCreateRequest,
                 user,
                 post
-        ));
+        );
+        comment = commentRepository.save(comment);
         Long parentCommentId = commentsCreateRequest.getParentCommentId();
         if (parentCommentId != null) {
             Comments parentComment = commentRepository.findById(parentCommentId)
@@ -60,9 +61,14 @@ public class CommentsService {
         List<Comments> comments = commentRepository.findAllByPostId(postId);
         return comments.stream().map(comment -> {
             CommentsResponse commentsResponse = CommentsMapper.INSTANCE.toResponse(comment);
-            Long parentCommentId = commentsHierarchyRepository.findParentCommentIdByChildCommentId(comment.getId())
-                    .orElse(null);
-            commentsResponse.setParentCommentId(parentCommentId);
+            commentsHierarchyRepository.findByChildCommentId(comment.getId())
+                    .ifPresent(commentsHierarchy ->
+                        commentsResponse.setParentCommentId(
+                                commentsHierarchy.getId().getParentCommentId()
+                        )
+                    );
+            // TODO: 댓글 좋아요 테이블 만들어서 로직 만들 것!
+            commentsResponse.setIsLiked(false);
             return commentsResponse;
         }).toList();
     }
