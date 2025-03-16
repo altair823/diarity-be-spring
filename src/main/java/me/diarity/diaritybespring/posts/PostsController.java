@@ -34,7 +34,8 @@ public class PostsController {
 
     @GetMapping("/{id}")
     public PostsResponse getPostById(@PathVariable Long id) {
-        return postsService.findById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.findById(id, authentication.getPrincipal().toString());
     }
 
     @PostMapping("/{id}/like")

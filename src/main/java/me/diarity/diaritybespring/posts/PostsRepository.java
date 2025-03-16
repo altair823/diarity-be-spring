@@ -1,5 +1,6 @@
 package me.diarity.diaritybespring.posts;
 
+import me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,15 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
                     "ORDER BY p.createdAt DESC"
     )
     List<Object[]> findAllByOrderByCreatedAtDescWithLiked(@Param("userId") Long userId);
+
+    @Query(
+            "SELECT new me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse(" +
+                    "p.id, p.title, p.content, p.author.email, p.createdAt, p.modifiedAt, " +
+                    "p.isPublic, p.isDeleted, p.deletedAt, p.likesCount, p.commentsCount, " +
+                    "CASE WHEN l.id IS NULL THEN false ELSE true END) " +
+                    "FROM Posts p " +
+                    "LEFT JOIN Likes l ON p.id = l.post.id AND l.user.id = :userId " +
+                    "WHERE p.id = :postId"
+    )
+    PostsWithLikeResponse findByIdWithLiked(@Param("postId") Long postId, @Param("userId") Long userId);
 }

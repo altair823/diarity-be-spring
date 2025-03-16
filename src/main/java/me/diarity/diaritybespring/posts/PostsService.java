@@ -7,10 +7,12 @@ import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsMapper;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
+import me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse;
 import me.diarity.diaritybespring.posts.likes.LikesService;
 import me.diarity.diaritybespring.posts.likes.dto.LikesRequest;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.dto.UsersMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,10 +53,19 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
-    public PostsResponse findById(Long id) {
-        Posts posts = postsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-        return PostsMapper.INSTANCE.toResponse(posts);
+    public PostsResponse findById(Long id, String userEmail) {
+        if (userEmail.equals("anonymousUser")) {
+            Posts posts = postsRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+            return PostsMapper.INSTANCE.toResponse(posts);
+        }
+        else {
+            Users user = usersRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+            PostsWithLikeResponse postsWithLikeResponse = postsRepository.findByIdWithLiked(id, user.getId());
+            System.out.println(postsWithLikeResponse);
+            return PostsMapper.INSTANCE.toResponse(postsWithLikeResponse, UsersMapper.INSTANCE.toResponse(user));
+        }
     }
 
     public PostsResponse like(Long id, String userEmail) {
