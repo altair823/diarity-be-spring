@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.diarity.diaritybespring.posts.Posts;
+import me.diarity.diaritybespring.posts.likes.dto.LikesId;
 import me.diarity.diaritybespring.users.Users;
 import org.hibernate.annotations.CreationTimestamp;
 

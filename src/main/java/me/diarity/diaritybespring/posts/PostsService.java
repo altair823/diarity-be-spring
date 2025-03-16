@@ -1,6 +1,9 @@
 package me.diarity.diaritybespring.posts;
 
 import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.posts.comments.CommentsService;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsMapper;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
@@ -18,6 +21,7 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final UsersRepository usersRepository;
     private final LikesService likesService;
+    private final CommentsService commentsService;
 
     public List<PostsResponse> getAll(String userEmail) {
         if (userEmail.equals("anonymousUser")) {
@@ -47,7 +51,7 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
-    public PostsResponse getPostById(Long id) {
+    public PostsResponse findById(Long id) {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         return PostsMapper.INSTANCE.toResponse(posts);
@@ -83,5 +87,13 @@ public class PostsService {
         posts.removeLike();
         posts = postsRepository.save(posts);
         return PostsMapper.INSTANCE.toResponse(posts);
+    }
+
+    public CommentsResponse createComment(CommentsCreateRequest commentsCreateRequest, String userEmail, Long postId) {
+        return commentsService.create(commentsCreateRequest, userEmail, postId);
+    }
+
+    public List<CommentsResponse> findAllComments(Long postId) {
+        return commentsService.findAll(postId);
     }
 }

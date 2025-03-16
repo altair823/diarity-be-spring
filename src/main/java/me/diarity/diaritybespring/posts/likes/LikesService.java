@@ -1,6 +1,7 @@
 package me.diarity.diaritybespring.posts.likes;
 
 import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.posts.likes.dto.LikesId;
 import me.diarity.diaritybespring.posts.likes.dto.LikesRequest;
 import me.diarity.diaritybespring.posts.likes.dto.LikesResponse;
 import org.springframework.stereotype.Service;

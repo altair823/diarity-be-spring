@@ -1,4 +1,4 @@
-package me.diarity.diaritybespring.posts.likes;
+package me.diarity.diaritybespring.posts.likes.dto;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;

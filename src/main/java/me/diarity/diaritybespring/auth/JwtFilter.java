@@ -33,16 +33,20 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = getTokenFromCookies(request.getCookies());
         if (token != null) {
-            String role = jwtUtils.getRole(token);
-            String email = jwtUtils.getEmail(token);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    email,
-                    null,
-                    Collections.singleton(
-                            new SimpleGrantedAuthority(role)
-                    )
-            );
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            try {
+                String role = jwtUtils.getRole(token);
+                String email = jwtUtils.getEmail(token);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        email,
+                        null,
+                        Collections.singleton(
+                                new SimpleGrantedAuthority(role)
+                        )
+                );
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
+            }
         }
         filterChain.doFilter(request, response);
     }
