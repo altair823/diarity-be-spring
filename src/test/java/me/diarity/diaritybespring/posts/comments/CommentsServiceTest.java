@@ -5,9 +5,11 @@ import me.diarity.diaritybespring.posts.PostsRepository;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsHierarchyId;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
+import me.diarity.diaritybespring.posts.comments.dto.CommentsWithLikeResponse;
 import me.diarity.diaritybespring.posts.comments.entity.Comments;
 import me.diarity.diaritybespring.posts.comments.entity.CommentsHierarchy;
 import me.diarity.diaritybespring.posts.comments.repository.CommentsHierarchyRepository;
+import me.diarity.diaritybespring.posts.comments.repository.CommentsLikesRepository;
 import me.diarity.diaritybespring.posts.comments.repository.CommentsRepository;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
@@ -32,6 +34,8 @@ public class CommentsServiceTest {
     private CommentsRepository commentsRepository;
     @Mock
     private CommentsHierarchyRepository commentsHierarchyRepository;
+    @Mock
+    private CommentsLikesRepository commentsLikesRepository;
     @Mock
     private UsersRepository usersRepository;
     @Mock
@@ -65,7 +69,7 @@ public class CommentsServiceTest {
 
     private final Instant createdAt = Instant.ofEpochMilli(1612137600000L);
     private final Instant modifiedAt = Instant.ofEpochMilli(1612224000000L);
-    private final Comments comment = Comments.builder()
+    private final Comments comments = Comments.builder()
             .id(3L)
             .content("testComment")
             .author(user)
@@ -77,31 +81,34 @@ public class CommentsServiceTest {
             .likesCount(0)
             .build();
 
+    private static void assertCommentsResponse(CommentsResponse commentsResponses, Comments comments, Users user, Posts post) {
+        assertThat(commentsResponses.getId()).isEqualTo(comments.getId());
+        assertThat(commentsResponses.getUserId()).isEqualTo(user.getId());
+        assertThat(commentsResponses.getDisplayName()).isEqualTo(user.getDisplayName());
+        assertThat(commentsResponses.getPicture()).isEqualTo(user.getPicture());
+        assertThat(commentsResponses.getContent()).isEqualTo(comments.getContent());
+        assertThat(commentsResponses.getLikesCount()).isEqualTo(comments.getLikesCount());
+        assertThat(commentsResponses.getIsLiked()).isFalse();
+        assertThat(commentsResponses.getPostId()).isEqualTo(post.getId());
+        assertThat(commentsResponses.getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comments.getCreatedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponses.getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comments.getModifiedAt(), ZoneOffset.systemDefault()));
+    }
+
     @Test
     public void create() {
         // given
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
+                .content(comments.getContent())
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        when(commentsRepository.save(any())).thenReturn(comment);
+        when(commentsRepository.save(any())).thenReturn(comments);
 
         // when
         CommentsResponse commentsResponse = commentsService.create(commentsCreateRequest, user.getEmail(), post.getId());
 
         // then
-        assertThat(commentsResponse.getId()).isEqualTo(comment.getId());
-        assertThat(commentsResponse.getUserId()).isEqualTo(user.getId());
-        assertThat(commentsResponse.getDisplayName()).isEqualTo(user.getDisplayName());
-        assertThat(commentsResponse.getPicture()).isEqualTo(user.getPicture());
-        assertThat(commentsResponse.getContent()).isEqualTo(comment.getContent());
-        assertThat(commentsResponse.getLikesCount()).isEqualTo(comment.getLikesCount());
-        assertThat(commentsResponse.getIsLiked()).isFalse();
-        assertThat(commentsResponse.getPostId()).isEqualTo(post.getId());
-        assertThat(commentsResponse.getParentCommentId()).isNull();
-        assertThat(commentsResponse.getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getCreatedAt(), ZoneOffset.systemDefault()));
-        assertThat(commentsResponse.getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getModifiedAt(), ZoneOffset.systemDefault()));
+        assertCommentsResponse(commentsResponse, comments, user, post);
     }
 
     @Test
@@ -109,7 +116,7 @@ public class CommentsServiceTest {
         // given
         Instant createdAt = Instant.ofEpochMilli(1612310400000L);
         Instant modifiedAt = Instant.ofEpochMilli(1612396800000L);
-        Comments parentComment = Comments.builder()
+        Comments parentComments = Comments.builder()
                 .id(4L)
                 .content("testParentComment")
                 .author(user)
@@ -121,41 +128,41 @@ public class CommentsServiceTest {
                 .likesCount(0)
                 .build();
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
-                .parentCommentId(parentComment.getId())
+                .content(comments.getContent())
+                .parentCommentId(parentComments.getId())
                 .build();
         CommentsHierarchy commentsHierarchy = CommentsHierarchy.builder()
-                .parentComment(parentComment)
-                .childComment(comment)
+                .parentComments(parentComments)
+                .childComments(comments)
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        when(commentsRepository.save(any())).thenReturn(comment);
-        when(commentsRepository.findById(4L)).thenReturn(Optional.of(parentComment));
+        when(commentsRepository.save(any())).thenReturn(comments);
+        when(commentsRepository.findById(4L)).thenReturn(Optional.of(parentComments));
         when(commentsHierarchyRepository.save(any())).thenReturn(commentsHierarchy);
 
         // when
         CommentsResponse commentsResponse = commentsService.create(commentsCreateRequest, user.getEmail(), post.getId());
 
         // then
-        assertThat(commentsResponse.getId()).isEqualTo(comment.getId());
+        assertThat(commentsResponse.getId()).isEqualTo(comments.getId());
         assertThat(commentsResponse.getUserId()).isEqualTo(user.getId());
         assertThat(commentsResponse.getDisplayName()).isEqualTo(user.getDisplayName());
         assertThat(commentsResponse.getPicture()).isEqualTo(user.getPicture());
-        assertThat(commentsResponse.getContent()).isEqualTo(comment.getContent());
-        assertThat(commentsResponse.getLikesCount()).isEqualTo(comment.getLikesCount());
+        assertThat(commentsResponse.getContent()).isEqualTo(comments.getContent());
+        assertThat(commentsResponse.getLikesCount()).isEqualTo(comments.getLikesCount());
         assertThat(commentsResponse.getIsLiked()).isFalse();
         assertThat(commentsResponse.getPostId()).isEqualTo(post.getId());
-        assertThat(commentsResponse.getParentCommentId()).isEqualTo(parentComment.getId());
-        assertThat(commentsResponse.getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getCreatedAt(), ZoneOffset.systemDefault()));
-        assertThat(commentsResponse.getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getModifiedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponse.getParentCommentId()).isEqualTo(parentComments.getId());
+        assertThat(commentsResponse.getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comments.getCreatedAt(), ZoneOffset.systemDefault()));
+        assertThat(commentsResponse.getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comments.getModifiedAt(), ZoneOffset.systemDefault()));
     }
 
     @Test
     public void createFailToFindUser() {
         // given
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
+                .content(comments.getContent())
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
 
@@ -170,7 +177,7 @@ public class CommentsServiceTest {
     public void createFailToFindPost() {
         // given
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
+                .content(comments.getContent())
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.empty());
@@ -186,7 +193,7 @@ public class CommentsServiceTest {
     public void createFailToFindParentComment() {
         // given
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
+                .content(comments.getContent())
                 .parentCommentId(4L)
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
@@ -204,7 +211,7 @@ public class CommentsServiceTest {
     public void createFailToSaveComment() {
         // given
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
+                .content(comments.getContent())
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
@@ -222,7 +229,7 @@ public class CommentsServiceTest {
         // given
         Instant createdAt = Instant.ofEpochMilli(1612310400000L);
         Instant modifiedAt = Instant.ofEpochMilli(1612396800000L);
-        Comments parentComment = Comments.builder()
+        Comments parentComments = Comments.builder()
                 .id(4L)
                 .content("testParentComment")
                 .author(user)
@@ -234,13 +241,13 @@ public class CommentsServiceTest {
                 .likesCount(0)
                 .build();
         CommentsCreateRequest commentsCreateRequest = CommentsCreateRequest.builder()
-                .content(comment.getContent())
-                .parentCommentId(parentComment.getId())
+                .content(comments.getContent())
+                .parentCommentId(parentComments.getId())
                 .build();
         when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        when(commentsRepository.save(any())).thenReturn(comment);
-        when(commentsRepository.findById(4L)).thenReturn(Optional.of(parentComment));
+        when(commentsRepository.save(any())).thenReturn(comments);
+        when(commentsRepository.findById(4L)).thenReturn(Optional.of(parentComments));
         when(commentsHierarchyRepository.save(any())).thenThrow(new IllegalArgumentException("댓글 계층 저장에 실패했습니다."));
 
         // when
@@ -253,9 +260,7 @@ public class CommentsServiceTest {
     @Test
     public void findAll() {
         // given
-        Instant createdAt = Instant.ofEpochMilli(1612310400000L);
-        Instant modifiedAt = Instant.ofEpochMilli(1612396800000L);
-        Comments comment2 = Comments.builder()
+        Comments comments2 = Comments.builder()
                 .id(4L)
                 .content("testComment2")
                 .author(user)
@@ -268,7 +273,7 @@ public class CommentsServiceTest {
                 .build();
         Instant createdAtChild = Instant.ofEpochMilli(1612489600000L);
         Instant modifiedAtChild = Instant.ofEpochMilli(1612576000000L);
-        Comments childComment = Comments.builder()
+        Comments childComments = Comments.builder()
                 .id(5L)
                 .content("testChildComment")
                 .author(user)
@@ -281,61 +286,74 @@ public class CommentsServiceTest {
                 .build();
         CommentsHierarchy commentsHierarchy = CommentsHierarchy.builder()
                 .id(new CommentsHierarchyId(
-                        comment2.getId(),
-                        childComment.getId()
+                        comments2.getId(),
+                        childComments.getId()
                 ))
-                .parentComment(comment2)
-                .childComment(childComment)
+                .parentComments(comments2)
+                .childComments(childComments)
                 .build();
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        when(commentsRepository.findAllByPostId(post.getId())).thenReturn(List.of(
-                comment,
-                comment2,
-                childComment
+        when(commentsRepository.findAllByPostIdWithLike(post.getId(), user.getId())).thenReturn(List.of(
+                CommentsWithLikeResponse.builder()
+                        .id(comments.getId())
+                        .authorUserId(user.getId())
+                        .authorDisplayName(user.getDisplayName())
+                        .authorPicture(user.getPicture())
+                        .createdAt(createdAt)
+                        .modifiedAt(modifiedAt)
+                        .content(comments.getContent())
+                        .isDeleted(comments.getIsDeleted())
+                        .deletedAt(comments.getDeletedAt())
+                        .likesCount(comments.getLikesCount())
+                        .isLiked(false)
+                        .postId(post.getId())
+                        .build(),
+                CommentsWithLikeResponse.builder()
+                        .id(comments2.getId())
+                        .authorUserId(user.getId())
+                        .authorDisplayName(user.getDisplayName())
+                        .authorPicture(user.getPicture())
+                        .createdAt(createdAt)
+                        .modifiedAt(modifiedAt)
+                        .content(comments2.getContent())
+                        .isDeleted(comments2.getIsDeleted())
+                        .deletedAt(comments2.getDeletedAt())
+                        .likesCount(comments2.getLikesCount())
+                        .isLiked(false)
+                        .postId(post.getId())
+                        .build(),
+                CommentsWithLikeResponse.builder()
+                        .id(childComments.getId())
+                        .authorUserId(user.getId())
+                        .authorDisplayName(user.getDisplayName())
+                        .authorPicture(user.getPicture())
+                        .createdAt(createdAtChild)
+                        .modifiedAt(modifiedAtChild)
+                        .content(childComments.getContent())
+                        .isDeleted(childComments.getIsDeleted())
+                        .deletedAt(childComments.getDeletedAt())
+                        .likesCount(childComments.getLikesCount())
+                        .isLiked(false)
+                        .postId(post.getId())
+                        .parentCommentId(4L)
+                        .build()
         ));
-        when(commentsHierarchyRepository.findByChildCommentId(childComment.getId()))
+        when(commentsHierarchyRepository.findByChildCommentsId(childComments.getId()))
                 .thenReturn(Optional.ofNullable(commentsHierarchy));
 
         // when
-        List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId());
+        List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId(), user.getEmail());
+        for (CommentsResponse commentsResponse : commentsResponses) {
+            System.out.println(commentsResponse.getId());
+        }
 
         // then
         assertThat(commentsResponses.size()).isEqualTo(3);
-        assertThat(commentsResponses.getFirst().getId()).isEqualTo(comment.getId());
-        assertThat(commentsResponses.getFirst().getUserId()).isEqualTo(user.getId());
-        assertThat(commentsResponses.getFirst().getDisplayName()).isEqualTo(user.getDisplayName());
-        assertThat(commentsResponses.getFirst().getPicture()).isEqualTo(user.getPicture());
-        assertThat(commentsResponses.getFirst().getContent()).isEqualTo(comment.getContent());
-        assertThat(commentsResponses.getFirst().getLikesCount()).isEqualTo(comment.getLikesCount());
-        assertThat(commentsResponses.getFirst().getIsLiked()).isFalse();
-        assertThat(commentsResponses.getFirst().getPostId()).isEqualTo(post.getId());
-        assertThat(commentsResponses.getFirst().getParentCommentId()).isNull();
-        assertThat(commentsResponses.getFirst().getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getCreatedAt(), ZoneOffset.systemDefault()));
-        assertThat(commentsResponses.getFirst().getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment.getModifiedAt(), ZoneOffset.systemDefault()));
-
-        assertThat(commentsResponses.get(1).getId()).isEqualTo(comment2.getId());
-        assertThat(commentsResponses.get(1).getUserId()).isEqualTo(user.getId());
-        assertThat(commentsResponses.get(1).getDisplayName()).isEqualTo(user.getDisplayName());
-        assertThat(commentsResponses.get(1).getPicture()).isEqualTo(user.getPicture());
-        assertThat(commentsResponses.get(1).getContent()).isEqualTo(comment2.getContent());
-        assertThat(commentsResponses.get(1).getLikesCount()).isEqualTo(comment2.getLikesCount());
-        assertThat(commentsResponses.get(1).getIsLiked()).isFalse();
-        assertThat(commentsResponses.get(1).getPostId()).isEqualTo(post.getId());
-        assertThat(commentsResponses.get(1).getParentCommentId()).isNull();
-        assertThat(commentsResponses.get(1).getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(comment2.getCreatedAt(), ZoneOffset.systemDefault()));
-        assertThat(commentsResponses.get(1).getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(comment2.getModifiedAt(), ZoneOffset.systemDefault()));
-
-        assertThat(commentsResponses.getLast().getId()).isEqualTo(childComment.getId());
-        assertThat(commentsResponses.getLast().getUserId()).isEqualTo(user.getId());
-        assertThat(commentsResponses.getLast().getDisplayName()).isEqualTo(user.getDisplayName());
-        assertThat(commentsResponses.getLast().getPicture()).isEqualTo(user.getPicture());
-        assertThat(commentsResponses.getLast().getContent()).isEqualTo(childComment.getContent());
-        assertThat(commentsResponses.getLast().getLikesCount()).isEqualTo(childComment.getLikesCount());
-        assertThat(commentsResponses.getLast().getIsLiked()).isFalse();
-        assertThat(commentsResponses.getLast().getPostId()).isEqualTo(post.getId());
-        assertThat(commentsResponses.getLast().getParentCommentId()).isEqualTo(comment2.getId());
-        assertThat(commentsResponses.getLast().getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(childComment.getCreatedAt(), ZoneOffset.systemDefault()));
-        assertThat(commentsResponses.getLast().getModifiedAt()).isEqualTo(LocalDateTime.ofInstant(childComment.getModifiedAt(), ZoneOffset.systemDefault()));
+        assertCommentsResponse(commentsResponses.getFirst(), comments, user, post);
+        assertCommentsResponse(commentsResponses.get(1), comments2, user, post);
+        assertCommentsResponse(commentsResponses.getLast(), childComments, user, post);
+        assertThat(commentsResponses.getLast().getParentCommentId()).isEqualTo(comments2.getId());
     }
 
     @Test
@@ -346,7 +364,123 @@ public class CommentsServiceTest {
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> commentsService.findAll(post.getId()));
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.findAll(post.getId(), user.getEmail()));
         assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
+    }
+
+    @Test
+    public void like() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(commentsLikesRepository.existsByCommentIdAndUserId(comments.getId(), user.getId())).thenReturn(false);
+        when(commentsRepository.save(any())).thenReturn(comments);
+
+
+        // when
+        CommentsResponse commentsResponse = commentsService.like(comments.getId(), user.getEmail());
+
+        // then
+        assertCommentsResponse(commentsResponse, comments, user, post);
+    }
+
+    @Test
+    public void likeFailToFindComment() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.like(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 댓글이 없습니다.");
+    }
+
+    @Test
+    public void likeFailToFindUser() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.like(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
+    }
+
+    @Test
+    public void likeFailToSaveComment() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(commentsLikesRepository.existsByCommentIdAndUserId(comments.getId(), user.getId())).thenReturn(true);
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.like(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("이미 좋아요를 누른 댓글입니다.");
+    }
+
+    @Test
+    public void unlike() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(commentsLikesRepository.existsByCommentIdAndUserId(comments.getId(), user.getId())).thenReturn(true);
+        when(commentsRepository.save(any())).thenReturn(comments);
+
+        // when
+        CommentsResponse commentsResponse = commentsService.unlike(comments.getId(), user.getEmail());
+
+        // then
+        assertCommentsResponse(commentsResponse, comments, user, post);
+    }
+
+    @Test
+    public void unlikeFailToFindComment() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.unlike(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 댓글이 없습니다.");
+    }
+
+    @Test
+    public void unlikeFailToFindUser() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.unlike(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
+    }
+
+    @Test
+    public void unlikeFailToSaveComment() {
+        // given
+        when(commentsRepository.findById(comments.getId())).thenReturn(Optional.of(comments));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(commentsLikesRepository.existsByCommentIdAndUserId(comments.getId(), user.getId())).thenReturn(false);
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> commentsService.unlike(comments.getId(), user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("좋아요를 누르지 않은 댓글입니다.");
     }
 }

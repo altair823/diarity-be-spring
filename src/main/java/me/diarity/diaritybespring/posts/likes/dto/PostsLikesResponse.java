@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class LikesResponse {
+public class PostsLikesResponse {
     private Long postId;
     private Long userId;
 }

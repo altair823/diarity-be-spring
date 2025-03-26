@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Long> {
@@ -16,7 +17,7 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
             "SELECT p, " +
                     "CASE WHEN l.id IS NULL THEN false ELSE true END " +
                     "FROM Posts p " +
-                    "LEFT JOIN Likes l ON p.id = l.post.id AND l.user.id = :userId " +
+                    "LEFT JOIN PostsLikes l ON p.id = l.post.id AND l.user.id = :userId " +
                     "ORDER BY p.createdAt DESC"
     )
     List<Object[]> findAllByOrderByCreatedAtDescWithLiked(@Param("userId") Long userId);
@@ -27,8 +28,8 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
                     "p.isPublic, p.isDeleted, p.deletedAt, p.likesCount, p.commentsCount, " +
                     "CASE WHEN l.id IS NULL THEN false ELSE true END) " +
                     "FROM Posts p " +
-                    "LEFT JOIN Likes l ON p.id = l.post.id AND l.user.id = :userId " +
+                    "LEFT JOIN PostsLikes l ON p.id = l.post.id AND l.user.id = :userId " +
                     "WHERE p.id = :postId"
     )
-    PostsWithLikeResponse findByIdWithLiked(@Param("postId") Long postId, @Param("userId") Long userId);
+    Optional<PostsWithLikeResponse> findByIdWithLiked(@Param("postId") Long postId, @Param("userId") Long userId);
 }
