@@ -87,7 +87,7 @@ public class PostsControllerTest {
                 .likesCount(0)
                 .commentsCount(0)
                 .build();
-        when(postsService.getAll(any())).thenReturn(
+        when(postsService.findAll(any())).thenReturn(
                 List.of(postsResponse2, postsResponse1)
         );
 
@@ -179,7 +179,7 @@ public class PostsControllerTest {
                 .likesCount(0)
                 .commentsCount(0)
                 .build();
-        when(postsService.findById(1L)).thenReturn(postsResponse);
+        when(postsService.findById(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when
         PostsResponse postById = postsController.getPostById(1L);
@@ -199,7 +199,7 @@ public class PostsControllerTest {
     }
 
     @Test
-    public void like() {
+    public void likePost() {
         // given
         LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
         LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
@@ -219,7 +219,7 @@ public class PostsControllerTest {
         when(postsService.like(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when
-        PostsResponse likedPostsResponse = postsController.like(1L);
+        PostsResponse likedPostsResponse = postsController.likePost(1L);
 
         // then
         assertThat(likedPostsResponse.getId()).isEqualTo(1L);
@@ -236,18 +236,18 @@ public class PostsControllerTest {
     }
 
     @Test
-    public void likeDuplicate() {
+    public void likePostDuplicate() {
         // given
         when(postsService.like(1L, author.getEmail())).thenThrow(new IllegalArgumentException("이미 좋아요를 누른 게시글입니다."));
 
         // when
         // then
         // throws IllegalArgumentException
-        assertThrows(IllegalArgumentException.class, () -> postsController.like(1L));
+        assertThrows(IllegalArgumentException.class, () -> postsController.likePost(1L));
     }
 
     @Test
-    public void unlike() {
+    public void unlikePost() {
         // given
         LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
         LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
@@ -267,7 +267,7 @@ public class PostsControllerTest {
         when(postsService.unlike(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when
-        PostsResponse unlikedPostsResponse = postsController.unlike(1L);
+        PostsResponse unlikedPostsResponse = postsController.unlikePost(1L);
 
         // then
         assertThat(unlikedPostsResponse.getId()).isEqualTo(1L);
@@ -284,14 +284,14 @@ public class PostsControllerTest {
     }
 
     @Test
-    public void unlikeFail() {
+    public void unlikePostFail() {
         // given
         when(postsService.unlike(1L, author.getEmail())).thenThrow(new IllegalArgumentException("좋아요를 누르지 않은 게시글입니다."));
 
         // when
         // then
         // throws IllegalArgumentException
-        assertThrows(IllegalArgumentException.class, () -> postsController.unlike(1L));
+        assertThrows(IllegalArgumentException.class, () -> postsController.unlikePost(1L));
     }
 
     @Test
@@ -375,7 +375,7 @@ public class PostsControllerTest {
     }
 
     @Test
-    public void getComments() {
+    public void getAllComments() {
         // given
         LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
         LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
@@ -405,12 +405,12 @@ public class PostsControllerTest {
                 .createdAt(postCreatedAt)
                 .modifiedAt(postModifiedAt)
                 .build();
-        when(postsService.findAllComments(1L)).thenReturn(
+        when(postsService.findAllComments(1L, author.getEmail())).thenReturn(
                 List.of(commentsResponse2, commentsResponse1)
         );
 
         // when
-        List<CommentsResponse> commentsResponses = postsController.getComments(1L);
+        List<CommentsResponse> commentsResponses = postsController.getAllComments(1L);
 
         // then
         assertThat(commentsResponses.getFirst().getId()).isEqualTo(2L);
@@ -436,5 +436,79 @@ public class PostsControllerTest {
         assertThat(commentsResponses.get(1).getParentCommentId()).isNull();
         assertThat(commentsResponses.get(1).getCreatedAt()).isEqualTo(postCreatedAt);
         assertThat(commentsResponses.get(1).getModifiedAt()).isEqualTo(postModifiedAt);
+    }
+
+    @Test
+    public void likeComment() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(1L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(1)
+                .isLiked(true)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .build();
+        when(postsService.likeComment(1L, author.getEmail())).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse likedCommentsResponse = postsController.likeComment(1L);
+
+        // then
+        assertThat(likedCommentsResponse.getId()).isEqualTo(1L);
+        assertThat(likedCommentsResponse.getUserId()).isEqualTo(author.getId());
+        assertThat(likedCommentsResponse.getDisplayName()).isEqualTo(author.getDisplayName());
+        assertThat(likedCommentsResponse.getPicture()).isEqualTo(author.getPicture());
+        assertThat(likedCommentsResponse.getContent()).isEqualTo("testContent");
+        assertThat(likedCommentsResponse.getLikesCount()).isEqualTo(1);
+        assertThat(likedCommentsResponse.getIsLiked()).isTrue();
+        assertThat(likedCommentsResponse.getPostId()).isEqualTo(1L);
+        assertThat(likedCommentsResponse.getParentCommentId()).isNull();
+        assertThat(likedCommentsResponse.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(likedCommentsResponse.getModifiedAt()).isEqualTo(postModifiedAt);
+    }
+
+    @Test
+    public void unlikeComment() {
+        // given
+        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(1L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt)
+                .modifiedAt(postModifiedAt)
+                .build();
+        when(postsService.unlikeComment(1L, author.getEmail())).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse unlikedCommentsResponse = postsController.unlikeComment(1L);
+
+        // then
+        assertThat(unlikedCommentsResponse.getId()).isEqualTo(1L);
+        assertThat(unlikedCommentsResponse.getUserId()).isEqualTo(author.getId());
+        assertThat(unlikedCommentsResponse.getDisplayName()).isEqualTo(author.getDisplayName());
+        assertThat(unlikedCommentsResponse.getPicture()).isEqualTo(author.getPicture());
+        assertThat(unlikedCommentsResponse.getContent()).isEqualTo("testContent");
+        assertThat(unlikedCommentsResponse.getLikesCount()).isEqualTo(0);
+        assertThat(unlikedCommentsResponse.getIsLiked()).isFalse();
+        assertThat(unlikedCommentsResponse.getPostId()).isEqualTo(1L);
+        assertThat(unlikedCommentsResponse.getParentCommentId()).isNull();
+        assertThat(unlikedCommentsResponse.getCreatedAt()).isEqualTo(postCreatedAt);
+        assertThat(unlikedCommentsResponse.getModifiedAt()).isEqualTo(postModifiedAt);
     }
 }

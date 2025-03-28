@@ -23,7 +23,7 @@ public class PostsController {
         // 로그인하지 않은 사용자는 "anonymousUser"로 출력됨
         // 로그인한 사용자는 Users 객체의 이메일이 출력됨
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return postsService.getAll(authentication.getPrincipal().toString());
+        return postsService.findAll(authentication.getPrincipal().toString());
     }
 
     @PostMapping
@@ -34,17 +34,18 @@ public class PostsController {
 
     @GetMapping("/{id}")
     public PostsResponse getPostById(@PathVariable Long id) {
-        return postsService.findById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.findById(id, authentication.getPrincipal().toString());
     }
 
     @PostMapping("/{id}/like")
-    public PostsResponse like(@PathVariable Long id) {
+    public PostsResponse likePost(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return postsService.like(id, authentication.getPrincipal().toString());
     }
 
     @DeleteMapping("/{id}/like")
-    public PostsResponse unlike(@PathVariable Long id) {
+    public PostsResponse unlikePost(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return postsService.unlike(id, authentication.getPrincipal().toString());
     }
@@ -56,7 +57,20 @@ public class PostsController {
     }
 
     @GetMapping("/{id}/comments")
-    public List<CommentsResponse> getComments(@PathVariable Long id) {
-        return postsService.findAllComments(id);
+    public List<CommentsResponse> getAllComments(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.findAllComments(id, authentication.getPrincipal().toString());
+    }
+
+    @PostMapping("/{id}/comments/{commentId}/like")
+    public CommentsResponse likeComment(@PathVariable Long commentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.likeComment(commentId, authentication.getPrincipal().toString());
+    }
+
+    @DeleteMapping("/{id}/comments/{commentId}/like")
+    public CommentsResponse unlikeComment(@PathVariable Long commentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return postsService.unlikeComment(commentId, authentication.getPrincipal().toString());
     }
 }

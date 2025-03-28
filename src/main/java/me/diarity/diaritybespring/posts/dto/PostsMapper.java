@@ -2,6 +2,7 @@ package me.diarity.diaritybespring.posts.dto;
 
 import me.diarity.diaritybespring.posts.Posts;
 import me.diarity.diaritybespring.users.Users;
+import me.diarity.diaritybespring.users.dto.UsersResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -24,6 +25,15 @@ public interface PostsMapper {
             @Mapping(target = "isLiked", expression = "java(false)")
     })
     PostsResponse toResponse(Posts posts);
+
+    @Mappings({
+            @Mapping(target = "author", source = "usersResponse"),
+            @Mapping(target = "id", source = "postsWithLikeResponse.id"),
+            @Mapping(target = "createdAt", source = "postsWithLikeResponse.createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
+            @Mapping(target = "modifiedAt", source = "postsWithLikeResponse.modifiedAt", qualifiedByName = "mapInstantToLocalDateTime"),
+            @Mapping(target = "deletedAt", source = "postsWithLikeResponse.deletedAt", qualifiedByName = "mapInstantToLocalDateTime"),
+    })
+    PostsResponse toResponse(PostsWithLikeResponse postsWithLikeResponse, UsersResponse usersResponse);
 
     @Mappings({
             @Mapping(target = "id", ignore = true),

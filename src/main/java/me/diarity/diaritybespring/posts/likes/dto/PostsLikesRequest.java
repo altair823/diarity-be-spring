@@ -7,7 +7,7 @@ import me.diarity.diaritybespring.users.Users;
 
 @Data
 @Builder
-public class LikesRequest {
+public class PostsLikesRequest {
     private Posts post;
     private Users user;
 }

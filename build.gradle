@@ -55,4 +55,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    jvmArgs.removeAll { it.contains("captureAgent") }
 }
