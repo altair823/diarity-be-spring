@@ -7,10 +7,12 @@ import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsMapper;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
-import me.diarity.diaritybespring.posts.likes.LikesService;
-import me.diarity.diaritybespring.posts.likes.dto.LikesRequest;
+import me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse;
+import me.diarity.diaritybespring.posts.likes.PostsLikesService;
+import me.diarity.diaritybespring.posts.likes.dto.PostsLikesRequest;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.dto.UsersMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +22,11 @@ import java.util.List;
 public class PostsService {
     private final PostsRepository postsRepository;
     private final UsersRepository usersRepository;
-    private final LikesService likesService;
+    private final PostsLikesService postsLikesService;
     private final CommentsService commentsService;
 
-    public List<PostsResponse> getAll(String userEmail) {
+
+    public List<PostsResponse> findAll(String userEmail) {
         if (userEmail.equals("anonymousUser")) {
             List<Posts> posts = postsRepository.findAllByOrderByCreatedAtDesc();
             PostsMapper postsMapper = PostsMapper.INSTANCE;
@@ -51,10 +54,20 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
-    public PostsResponse findById(Long id) {
-        Posts posts = postsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-        return PostsMapper.INSTANCE.toResponse(posts);
+    public PostsResponse findById(Long id, String userEmail) {
+        if (userEmail.equals("anonymousUser")) {
+            Posts posts = postsRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+            return PostsMapper.INSTANCE.toResponse(posts);
+        }
+        else {
+            Users user = usersRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+            PostsWithLikeResponse postsWithLikeResponse = postsRepository.findByIdWithLiked(id, user.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+            System.out.println(postsWithLikeResponse);
+            return PostsMapper.INSTANCE.toResponse(postsWithLikeResponse, UsersMapper.INSTANCE.toResponse(user));
+        }
     }
 
     public PostsResponse like(Long id, String userEmail) {
@@ -62,8 +75,8 @@ public class PostsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
-        likesService.like(
-                LikesRequest.builder()
+        postsLikesService.like(
+                PostsLikesRequest.builder()
                         .post(posts)
                         .user(user)
                         .build()
@@ -78,8 +91,8 @@ public class PostsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         Users user = usersRepository.findByEmail(string)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
-        likesService.unlike(
-                LikesRequest.builder()
+        postsLikesService.unlike(
+                PostsLikesRequest.builder()
                         .post(posts)
                         .user(user)
                         .build()
@@ -93,7 +106,15 @@ public class PostsService {
         return commentsService.create(commentsCreateRequest, userEmail, postId);
     }
 
-    public List<CommentsResponse> findAllComments(Long postId) {
-        return commentsService.findAll(postId);
+    public List<CommentsResponse> findAllComments(Long postId, String userEmail) {
+        return commentsService.findAll(postId, userEmail);
+    }
+
+    public CommentsResponse likeComment(Long commentId, String userEmail) {
+        return commentsService.like(commentId, userEmail);
+    }
+
+    public CommentsResponse unlikeComment(Long commentId, String userEmail) {
+        return commentsService.unlike(commentId, userEmail);
     }
 }

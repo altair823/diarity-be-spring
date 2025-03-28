@@ -18,9 +18,9 @@ public class CommentsHierarchy {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("parentCommentId")
-    private Comments parentComment;
+    private Comments parentComments;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("childCommentId")
-    private Comments childComment;
+    private Comments childComments;
 }

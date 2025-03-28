@@ -5,9 +5,10 @@ import me.diarity.diaritybespring.posts.comments.dto.CommentsCreateRequest;
 import me.diarity.diaritybespring.posts.comments.dto.CommentsResponse;
 import me.diarity.diaritybespring.posts.dto.PostsCreateRequest;
 import me.diarity.diaritybespring.posts.dto.PostsResponse;
-import me.diarity.diaritybespring.posts.likes.LikesService;
-import me.diarity.diaritybespring.posts.likes.dto.LikesRequest;
-import me.diarity.diaritybespring.posts.likes.dto.LikesResponse;
+import me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse;
+import me.diarity.diaritybespring.posts.likes.PostsLikesService;
+import me.diarity.diaritybespring.posts.likes.dto.PostsLikesRequest;
+import me.diarity.diaritybespring.posts.likes.dto.PostsLikesResponse;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,7 @@ public class PostsServiceTest {
     @Mock
     private UsersRepository usersRepository;
     @Mock
-    private LikesService likesService;
+    private PostsLikesService postsLikesService;
     @Mock
     private CommentsService commentsService;
 
@@ -53,6 +54,27 @@ public class PostsServiceTest {
             .displayName("testUser")
             .build();
 
+
+    private final Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+    private final Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+    private final Instant post2CreatedAt = Instant.ofEpochMilli(1642075200000L);
+    private final Instant post2ModifiedAt = Instant.ofEpochMilli(1642161600000L);
+    private Posts createPosts(Instant createdAt, Instant modifiedAt, int likesCount) {
+        return Posts.builder()
+                .id(1L)
+                .title("testTitle")
+                .content("testContent")
+                .author(author)
+                .createdAt(createdAt)
+                .modifiedAt(modifiedAt)
+                .isPublic(true)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(likesCount)
+                .commentsCount(0)
+                .build();
+    }
+
     @BeforeEach
     public void setUp() {
         // Create a mock Authentication object
@@ -66,103 +88,42 @@ public class PostsServiceTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
+    private void assertPostsResponse(PostsResponse postsResponses, Posts posts2, Instant post2CreatedAt, Instant post2ModifiedAt) {
+        assertThat(postsResponses.getTitle()).isEqualTo(posts2.getTitle());
+        assertThat(postsResponses.getContent()).isEqualTo(posts2.getContent());
+        assertThat(postsResponses.getAuthor().getEmail()).isEqualTo(author.getEmail());
+        assertThat(postsResponses.getCreatedAt()).isEqualTo(post2CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponses.getModifiedAt()).isEqualTo(post2ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        assertThat(postsResponses.getIsPublic()).isEqualTo(posts2.getIsPublic());
+        assertThat(postsResponses.getIsDeleted()).isEqualTo(posts2.getIsDeleted());
+        assertThat(postsResponses.getDeletedAt()).isEqualTo(posts2.getDeletedAt());
+        assertThat(postsResponses.getLikesCount()).isEqualTo(posts2.getLikesCount());
+        assertThat(postsResponses.getCommentsCount()).isEqualTo(posts2.getCommentsCount());
+    }
+
     @Test
-    public void getAllAnonymousUser() {
+    public void findAllAnonymousUser() {
         // given
-        Instant post1CreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant post1ModifiedAt = Instant.ofEpochMilli(1641081600000L);
-        Instant post2CreatedAt = Instant.ofEpochMilli(1642075200000L);
-        Instant post2ModifiedAt = Instant.ofEpochMilli(1642161600000L);
-        Posts posts1 = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(post1CreatedAt)
-                .modifiedAt(post1ModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
-        Posts posts2 = Posts.builder()
-                .id(2L)
-                .title("testTitle2")
-                .content("testContent2")
-                .author(author)
-                .createdAt(post2CreatedAt)
-                .modifiedAt(post2ModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
+        Posts posts1 = createPosts(postCreatedAt, postModifiedAt, 0);
+        Posts posts2 = createPosts(post2CreatedAt, post2ModifiedAt, 0);
         when(postsRepository.findAllByOrderByCreatedAtDesc()).thenReturn(
                 List.of(posts2, posts1)
         );
 
         // when
-        List<PostsResponse> postsResponses = postsService.getAll("anonymousUser");
+        List<PostsResponse> postsResponses = postsService.findAll("anonymousUser");
 
         // then
-        assertThat(postsResponses.getFirst().getTitle()).isEqualTo(posts2.getTitle());
-        assertThat(postsResponses.getFirst().getContent()).isEqualTo(posts2.getContent());
-        assertThat(postsResponses.getFirst().getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.getFirst().getCreatedAt()).isEqualTo(post2CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getFirst().getModifiedAt()).isEqualTo(post2ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getFirst().getIsPublic()).isEqualTo(posts2.getIsPublic());
-        assertThat(postsResponses.getFirst().getIsDeleted()).isEqualTo(posts2.getIsDeleted());
-        assertThat(postsResponses.getFirst().getDeletedAt()).isEqualTo(posts2.getDeletedAt());
-        assertThat(postsResponses.getFirst().getLikesCount()).isEqualTo(posts2.getLikesCount());
-        assertThat(postsResponses.getFirst().getCommentsCount()).isEqualTo(posts2.getCommentsCount());
-
-        assertThat(postsResponses.get(1).getTitle()).isEqualTo(posts1.getTitle());
-        assertThat(postsResponses.get(1).getContent()).isEqualTo(posts1.getContent());
-        assertThat(postsResponses.get(1).getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.get(1).getCreatedAt()).isEqualTo(post1CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.get(1).getModifiedAt()).isEqualTo(post1ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.get(1).getIsPublic()).isEqualTo(posts1.getIsPublic());
-        assertThat(postsResponses.get(1).getIsDeleted()).isEqualTo(posts1.getIsDeleted());
-        assertThat(postsResponses.get(1).getDeletedAt()).isEqualTo(posts1.getDeletedAt());
-        assertThat(postsResponses.get(1).getLikesCount()).isEqualTo(posts1.getLikesCount());
-        assertThat(postsResponses.get(1).getCommentsCount()).isEqualTo(posts1.getCommentsCount());
+        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
+        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
     }
 
+
     @Test
-    public void getAllNormalUser() {
+    public void findAllNormalUser() {
         // given
-        Instant post1CreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant post1ModifiedAt = Instant.ofEpochMilli(1641081600000L);
-        Instant post2CreatedAt = Instant.ofEpochMilli(1642075200000L);
-        Instant post2ModifiedAt = Instant.ofEpochMilli(1642161600000L);
-        Posts posts1 = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(post1CreatedAt)
-                .modifiedAt(post1ModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
-        Posts posts2 = Posts.builder()
-                .id(2L)
-                .title("testTitle2")
-                .content("testContent2")
-                .author(author)
-                .createdAt(post2CreatedAt)
-                .modifiedAt(post2ModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
+        Posts posts1 = createPosts(postCreatedAt, postModifiedAt, 0);
+        Posts posts2 = createPosts(post2CreatedAt, post2ModifiedAt, 0);
         when(postsRepository.findAllByOrderByCreatedAtDescWithLiked(1L)).thenReturn(
                 List.of(
                         List.of(posts2, false).toArray(),
@@ -172,52 +133,17 @@ public class PostsServiceTest {
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
 
         // when
-        List<PostsResponse> postsResponses = postsService.getAll(author.getEmail());
+        List<PostsResponse> postsResponses = postsService.findAll(author.getEmail());
 
         // then
-        assertThat(postsResponses.getFirst().getTitle()).isEqualTo(posts2.getTitle());
-        assertThat(postsResponses.getFirst().getContent()).isEqualTo(posts2.getContent());
-        assertThat(postsResponses.getFirst().getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.getFirst().getCreatedAt()).isEqualTo(post2CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getFirst().getModifiedAt()).isEqualTo(post2ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getFirst().getIsPublic()).isEqualTo(posts2.getIsPublic());
-        assertThat(postsResponses.getFirst().getIsDeleted()).isEqualTo(posts2.getIsDeleted());
-        assertThat(postsResponses.getFirst().getDeletedAt()).isEqualTo(posts2.getDeletedAt());
-        assertThat(postsResponses.getFirst().getLikesCount()).isEqualTo(posts2.getLikesCount());
-        assertThat(postsResponses.getFirst().getCommentsCount()).isEqualTo(posts2.getCommentsCount());
-        assertThat(postsResponses.getFirst().getIsLiked()).isFalse();
-
-        assertThat(postsResponses.get(1).getTitle()).isEqualTo(posts1.getTitle());
-        assertThat(postsResponses.get(1).getContent()).isEqualTo(posts1.getContent());
-        assertThat(postsResponses.get(1).getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.get(1).getCreatedAt()).isEqualTo(post1CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.get(1).getModifiedAt()).isEqualTo(post1ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.get(1).getIsPublic()).isEqualTo(posts1.getIsPublic());
-        assertThat(postsResponses.get(1).getIsDeleted()).isEqualTo(posts1.getIsDeleted());
-        assertThat(postsResponses.get(1).getDeletedAt()).isEqualTo(posts1.getDeletedAt());
-        assertThat(postsResponses.get(1).getLikesCount()).isEqualTo(posts1.getLikesCount());
-        assertThat(postsResponses.get(1).getCommentsCount()).isEqualTo(posts1.getCommentsCount());
-        assertThat(postsResponses.get(1).getIsLiked()).isTrue();
+        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
+        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
     }
 
     @Test
     public void create() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
@@ -229,16 +155,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.create(postsCreateRequest, author.getEmail());
 
         // then
-        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
-        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
-        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
-        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
-        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
-        assertThat(postsResponse.getLikesCount()).isEqualTo(posts.getLikesCount());
-        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
     }
 
     @Test
@@ -260,77 +177,83 @@ public class PostsServiceTest {
     @Test
     public void findById() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
-        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
+        when(postsRepository.findByIdWithLiked(1L, author.getId()))
+                .thenReturn(Optional.of(PostsWithLikeResponse.builder()
+                        .id(posts.getId())
+                        .title(posts.getTitle())
+                        .content(posts.getContent())
+                        .authorEmail(author.getEmail())
+                        .createdAt(postCreatedAt)
+                        .modifiedAt(postModifiedAt)
+                        .isPublic(posts.getIsPublic())
+                        .isDeleted(posts.getIsDeleted())
+                        .deletedAt(posts.getDeletedAt())
+                        .likesCount(posts.getLikesCount())
+                        .commentsCount(posts.getCommentsCount())
+                        .isLiked(true)
+                        .build()));
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
 
         // when
-        PostsResponse postsResponse = postsService.findById(1L);
+        PostsResponse postsResponse = postsService.findById(1L, author.getEmail());
 
         // then
-        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
-        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
-        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
-        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
-        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
-        assertThat(postsResponse.getLikesCount()).isEqualTo(posts.getLikesCount());
-        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
     }
 
     @Test
     public void findByIdFail() {
+        // given
+        when(postsRepository.findByIdWithLiked(1L, author.getId())).thenReturn(Optional.empty());
+        when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> postsService.findById(1L, author.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
+    }
+
+    @Test
+    public void findByIdAnonymousUser() {
+        // given
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
+        when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
+
+        // when
+        PostsResponse postsResponse = postsService.findById(1L, "anonymousUser");
+
+        // then
+        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+    }
+
+    @Test
+    public void findByIdAnonymousUserFail() {
         // given
         when(postsRepository.findById(1L)).thenReturn(Optional.empty());
 
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.findById(1L));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> postsService.findById(1L, "anonymousUser"));
         assertThat(e.getMessage()).isEqualTo("해당 게시글이 없습니다.");
     }
 
     @Test
     public void like() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
         int initialLikesCount = 0;
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(initialLikesCount)
-                .commentsCount(0)
-                .build();
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
-        when(likesService.like(LikesRequest.builder()
+        when(postsLikesService.like(PostsLikesRequest.builder()
                         .post(posts)
                         .user(author)
-                        .build())).thenReturn(Optional.of(LikesResponse.builder()
+                        .build())).thenReturn(Optional.of(PostsLikesResponse.builder()
                 .postId(posts.getId())
                 .userId(author.getId())
                 .build()));
@@ -339,16 +262,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.like(1L, author.getEmail());
 
         // then
-        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
-        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
-        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
-        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
-        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
-        assertThat(postsResponse.getLikesCount()).isEqualTo(initialLikesCount + 1);
-        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
     }
 
     @Test
@@ -366,25 +280,11 @@ public class PostsServiceTest {
     @Test
     public void likeDuplicate() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
         int initialLikesCount = 0;
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(initialLikesCount)
-                .commentsCount(0)
-                .build();
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
-        when(likesService.like(LikesRequest.builder()
+        when(postsLikesService.like(PostsLikesRequest.builder()
                         .post(posts)
                         .user(author)
                         .build())).thenReturn(Optional.empty());
@@ -399,29 +299,15 @@ public class PostsServiceTest {
     @Test
     public void unlike() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
         int initialLikesCount = 1;
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(initialLikesCount)
-                .commentsCount(0)
-                .build();
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
-        when(likesService.unlike(LikesRequest.builder()
+        when(postsLikesService.unlike(PostsLikesRequest.builder()
                         .post(posts)
                         .user(author)
-                        .build())).thenReturn(Optional.of(LikesResponse.builder()
+                        .build())).thenReturn(Optional.of(PostsLikesResponse.builder()
                 .postId(posts.getId())
                 .userId(author.getId())
                 .build()));
@@ -430,16 +316,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.unlike(1L, author.getEmail());
 
         // then
-        assertThat(postsResponse.getTitle()).isEqualTo(posts.getTitle());
-        assertThat(postsResponse.getContent()).isEqualTo(posts.getContent());
-        assertThat(postsResponse.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponse.getCreatedAt()).isEqualTo(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getModifiedAt()).isEqualTo(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponse.getIsPublic()).isEqualTo(posts.getIsPublic());
-        assertThat(postsResponse.getIsDeleted()).isEqualTo(posts.getIsDeleted());
-        assertThat(postsResponse.getDeletedAt()).isEqualTo(posts.getDeletedAt());
-        assertThat(postsResponse.getLikesCount()).isEqualTo(0);
-        assertThat(postsResponse.getCommentsCount()).isEqualTo(posts.getCommentsCount());
+        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
     }
 
     @Test
@@ -457,25 +334,11 @@ public class PostsServiceTest {
     @Test
     public void unlikeNotLikedFail() {
         // given
-        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
-        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
         int initialLikesCount = 0;
-        Posts posts = Posts.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(initialLikesCount)
-                .commentsCount(0)
-                .build();
+        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
-        when(likesService.unlike(LikesRequest.builder()
+        when(postsLikesService.unlike(PostsLikesRequest.builder()
                         .post(posts)
                         .user(author)
                         .build())).thenReturn(Optional.empty());
@@ -485,6 +348,20 @@ public class PostsServiceTest {
         // throws IllegalArgumentException
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> postsService.unlike(1L, author.getEmail()));
         assertThat(e.getMessage()).isEqualTo("좋아요를 누르지 않은 게시글입니다.");
+    }
+
+    private static void assertCommentsResponse(CommentsResponse commentsResponseResult, CommentsResponse commentsResponse) {
+        assertThat(commentsResponseResult.getId()).isEqualTo(commentsResponse.getId());
+        assertThat(commentsResponseResult.getUserId()).isEqualTo(commentsResponse.getUserId());
+        assertThat(commentsResponseResult.getDisplayName()).isEqualTo(commentsResponse.getDisplayName());
+        assertThat(commentsResponseResult.getPicture()).isEqualTo(commentsResponse.getPicture());
+        assertThat(commentsResponseResult.getContent()).isEqualTo(commentsResponse.getContent());
+        assertThat(commentsResponseResult.getLikesCount()).isEqualTo(commentsResponse.getLikesCount());
+        assertThat(commentsResponseResult.getIsLiked()).isEqualTo(commentsResponse.getIsLiked());
+        assertThat(commentsResponseResult.getPostId()).isEqualTo(commentsResponse.getPostId());
+        assertThat(commentsResponseResult.getParentCommentId()).isEqualTo(commentsResponse.getParentCommentId());
+        assertThat(commentsResponseResult.getCreatedAt()).isEqualTo(commentsResponse.getCreatedAt());
+        assertThat(commentsResponseResult.getModifiedAt()).isEqualTo(commentsResponse.getModifiedAt());
     }
 
     @Test
@@ -514,17 +391,7 @@ public class PostsServiceTest {
         CommentsResponse commentsResponseResult = postsService.createComment(commentsCreateRequest, author.getEmail(), 1L);
 
         // then
-        assertThat(commentsResponseResult.getId()).isEqualTo(commentsResponse.getId());
-        assertThat(commentsResponseResult.getUserId()).isEqualTo(commentsResponse.getUserId());
-        assertThat(commentsResponseResult.getDisplayName()).isEqualTo(commentsResponse.getDisplayName());
-        assertThat(commentsResponseResult.getPicture()).isEqualTo(commentsResponse.getPicture());
-        assertThat(commentsResponseResult.getContent()).isEqualTo(commentsResponse.getContent());
-        assertThat(commentsResponseResult.getLikesCount()).isEqualTo(commentsResponse.getLikesCount());
-        assertThat(commentsResponseResult.getIsLiked()).isEqualTo(commentsResponse.getIsLiked());
-        assertThat(commentsResponseResult.getPostId()).isEqualTo(commentsResponse.getPostId());
-        assertThat(commentsResponseResult.getParentCommentId()).isEqualTo(commentsResponse.getParentCommentId());
-        assertThat(commentsResponseResult.getCreatedAt()).isEqualTo(commentsResponse.getCreatedAt());
-        assertThat(commentsResponseResult.getModifiedAt()).isEqualTo(commentsResponse.getModifiedAt());
+        assertCommentsResponse(commentsResponseResult, commentsResponse);
     }
 
     @Test
@@ -555,17 +422,7 @@ public class PostsServiceTest {
         CommentsResponse commentsResponseResult = postsService.createComment(commentsCreateRequest, author.getEmail(), 1L);
 
         // then
-        assertThat(commentsResponseResult.getId()).isEqualTo(commentsResponse.getId());
-        assertThat(commentsResponseResult.getUserId()).isEqualTo(commentsResponse.getUserId());
-        assertThat(commentsResponseResult.getDisplayName()).isEqualTo(commentsResponse.getDisplayName());
-        assertThat(commentsResponseResult.getPicture()).isEqualTo(commentsResponse.getPicture());
-        assertThat(commentsResponseResult.getContent()).isEqualTo(commentsResponse.getContent());
-        assertThat(commentsResponseResult.getLikesCount()).isEqualTo(commentsResponse.getLikesCount());
-        assertThat(commentsResponseResult.getIsLiked()).isEqualTo(commentsResponse.getIsLiked());
-        assertThat(commentsResponseResult.getPostId()).isEqualTo(commentsResponse.getPostId());
-        assertThat(commentsResponseResult.getParentCommentId()).isEqualTo(commentsResponse.getParentCommentId());
-        assertThat(commentsResponseResult.getCreatedAt()).isEqualTo(commentsResponse.getCreatedAt());
-        assertThat(commentsResponseResult.getModifiedAt()).isEqualTo(commentsResponse.getModifiedAt());
+        assertCommentsResponse(commentsResponseResult, commentsResponse);
     }
 
     @Test
@@ -599,34 +456,68 @@ public class PostsServiceTest {
                 .createdAt(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
                 .modifiedAt(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
                 .build();
-        when(commentsService.findAll(1L)).thenReturn(List.of(commentsResponse1, commentsResponse2));
+        when(commentsService.findAll(1L, author.getEmail())).thenReturn(List.of(commentsResponse1, commentsResponse2));
 
         // when
-        List<CommentsResponse> commentsResponses = postsService.findAllComments(1L);
+        List<CommentsResponse> commentsResponses = postsService.findAllComments(1L, author.getEmail());
 
         // then
-        assertThat(commentsResponses.getFirst().getId()).isEqualTo(commentsResponse1.getId());
-        assertThat(commentsResponses.getFirst().getUserId()).isEqualTo(commentsResponse1.getUserId());
-        assertThat(commentsResponses.getFirst().getDisplayName()).isEqualTo(commentsResponse1.getDisplayName());
-        assertThat(commentsResponses.getFirst().getPicture()).isEqualTo(commentsResponse1.getPicture());
-        assertThat(commentsResponses.getFirst().getContent()).isEqualTo(commentsResponse1.getContent());
-        assertThat(commentsResponses.getFirst().getLikesCount()).isEqualTo(commentsResponse1.getLikesCount());
-        assertThat(commentsResponses.getFirst().getIsLiked()).isEqualTo(commentsResponse1.getIsLiked());
-        assertThat(commentsResponses.getFirst().getPostId()).isEqualTo(commentsResponse1.getPostId());
-        assertThat(commentsResponses.getFirst().getParentCommentId()).isEqualTo(commentsResponse1.getParentCommentId());
-        assertThat(commentsResponses.getFirst().getCreatedAt()).isEqualTo(commentsResponse1.getCreatedAt());
-        assertThat(commentsResponses.getFirst().getModifiedAt()).isEqualTo(commentsResponse1.getModifiedAt());
+        assertCommentsResponse(commentsResponses.getFirst(), commentsResponse1);
 
-        assertThat(commentsResponses.get(1).getId()).isEqualTo(commentsResponse2.getId());
-        assertThat(commentsResponses.get(1).getUserId()).isEqualTo(commentsResponse2.getUserId());
-        assertThat(commentsResponses.get(1).getDisplayName()).isEqualTo(commentsResponse2.getDisplayName());
-        assertThat(commentsResponses.get(1).getPicture()).isEqualTo(commentsResponse2.getPicture());
-        assertThat(commentsResponses.get(1).getContent()).isEqualTo(commentsResponse2.getContent());
-        assertThat(commentsResponses.get(1).getLikesCount()).isEqualTo(commentsResponse2.getLikesCount());
-        assertThat(commentsResponses.get(1).getIsLiked()).isEqualTo(commentsResponse2.getIsLiked());
-        assertThat(commentsResponses.get(1).getPostId()).isEqualTo(commentsResponse2.getPostId());
-        assertThat(commentsResponses.get(1).getParentCommentId()).isEqualTo(commentsResponse2.getParentCommentId());
-        assertThat(commentsResponses.get(1).getCreatedAt()).isEqualTo(commentsResponse2.getCreatedAt());
-        assertThat(commentsResponses.get(1).getModifiedAt()).isEqualTo(commentsResponse2.getModifiedAt());
+        assertCommentsResponse(commentsResponses.get(1), commentsResponse2);
+    }
+
+    @Test
+    public void likeComment() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(1L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(1)
+                .isLiked(true)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .modifiedAt(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .build();
+        when(commentsService.like(1L, author.getEmail())).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse commentsResponseResult = postsService.likeComment(1L, author.getEmail());
+
+        // then
+        assertCommentsResponse(commentsResponseResult, commentsResponse);
+    }
+
+    @Test
+    public void unlikeComment() {
+        // given
+        Instant postCreatedAt = Instant.ofEpochMilli(1640995200000L);
+        Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
+        CommentsResponse commentsResponse = CommentsResponse.builder()
+                .id(1L)
+                .userId(author.getId())
+                .displayName(author.getDisplayName())
+                .picture(author.getPicture())
+                .content("testContent")
+                .likesCount(0)
+                .isLiked(false)
+                .postId(1L)
+                .parentCommentId(null)
+                .createdAt(postCreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .modifiedAt(postModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .build();
+        when(commentsService.unlike(1L, author.getEmail())).thenReturn(commentsResponse);
+
+        // when
+        CommentsResponse commentsResponseResult = postsService.unlikeComment(1L, author.getEmail());
+
+        // then
+        assertCommentsResponse(commentsResponseResult, commentsResponse);
     }
 }

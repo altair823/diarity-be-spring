@@ -43,7 +43,16 @@ public interface CommentsMapper {
             @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "modifiedAt", source = "modifiedAt", qualifiedByName = "mapInstantToLocalDateTime")
     })
-    CommentsResponse toResponse(Comments comment);
+    CommentsResponse toResponse(Comments comments);
+
+    @Mappings({
+            @Mapping(target = "userId", source = "authorUserId"),
+            @Mapping(target = "displayName", source = "authorDisplayName"),
+            @Mapping(target = "picture", source = "authorPicture"),
+            @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
+            @Mapping(target = "modifiedAt", source = "modifiedAt", qualifiedByName = "mapInstantToLocalDateTime")
+    })
+    CommentsResponse toResponse(CommentsWithLikeResponse commentsWithLikeResponse);
 
     @Named("mapInstantToLocalDateTime")
     default LocalDateTime mapInstantToLocalDateTime(Instant instant) {

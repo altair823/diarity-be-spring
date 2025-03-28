@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.diarity.diaritybespring.posts.Posts;
-import me.diarity.diaritybespring.posts.likes.dto.LikesId;
+import me.diarity.diaritybespring.posts.likes.dto.PostsLikesId;
 import me.diarity.diaritybespring.users.Users;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -17,9 +17,9 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Likes {
+public class PostsLikes {
     @EmbeddedId
-    private LikesId id;
+    private PostsLikesId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")

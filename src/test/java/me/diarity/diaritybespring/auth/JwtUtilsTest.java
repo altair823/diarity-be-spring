@@ -38,7 +38,7 @@ public class JwtUtilsTest {
     public void generateTokenExpiredFail() {
         JwtUtils jwtUtils = new JwtUtils();
         jwtUtils.setSecret("testSecrettestSecrettestSecrettestSecrettestSecrettestSecret");
-        String token = jwtUtils.generateToken(username, role, email, 0);
+        String token = jwtUtils.generateToken(username, role, email, -1);
         assertThrows(ExpiredJwtException.class, () -> jwtUtils.getUsername(token));
     }
 }

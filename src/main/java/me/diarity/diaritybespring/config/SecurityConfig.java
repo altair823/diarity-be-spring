@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(
-                                "/index",
+                                "/h2-console/**",
                                 "/auth/login/google",
                                 "/auth/login/google/callback",
                                 "/auth/login/google/withaccesstoken",
