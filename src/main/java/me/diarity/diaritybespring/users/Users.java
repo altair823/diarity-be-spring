@@ -25,6 +25,6 @@ public class Users {
     @Column(nullable = false)
     private String role;
 
-    @Column(unique = false, nullable     = false)
+    @Column(nullable = false)
     private String displayName;
 }
