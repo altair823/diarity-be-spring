@@ -54,12 +54,14 @@ public class AuthController {
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(expiration);
+        accessTokenCookie.setSecure(true);
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(refreshExpiration);
+        accessTokenCookie.setSecure(true);
         response.addCookie(refreshTokenCookie);
     }
 
