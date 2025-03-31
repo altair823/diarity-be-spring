@@ -54,26 +54,15 @@ public class AuthController {
     }
 
     private void SetCookiesFromJwtResponse(HttpServletResponse response, JwtResponse jwtResponse) {
-        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(expiration);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setAttribute("SameSite", "None");
-        accessTokenCookie.setDomain("dev.diarity.me");
-        response.addCookie(accessTokenCookie);
+        // SameSite=None 설정 (ResponseHeader에 직접 추가)
+        String accessCookieStr = String.format("access_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
+                jwtResponse.getAccessToken(), expiration, "/", "dev.diarity.me");
+        response.addHeader("Set-Cookie", accessCookieStr);
 
-        Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(refreshExpiration);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setAttribute("SameSite", "None");
-        refreshTokenCookie.setDomain("dev.diarity.me");
-        response.addCookie(refreshTokenCookie);
-
-        log.error("access_token maxAge: {}", accessTokenCookie.getMaxAge());
-        log.error("refresh_token maxAge: {}", refreshTokenCookie.getMaxAge());
+        // 리프레시 토큰도 동일하게 설정
+        String refreshCookieStr = String.format("refresh_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
+                jwtResponse.getRefreshToken(), refreshExpiration, "/", "dev.diarity.me");
+        response.addHeader("Set-Cookie", refreshCookieStr);
     }
 
     @GetMapping("/status")
