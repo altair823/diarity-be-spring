@@ -31,6 +31,7 @@ public class AuthController {
     @GetMapping("/login/google")
     public void googleLogin(HttpServletResponse response) throws IOException {
         String googleLoginUrl = authService.getGoogleLoginUrl();
+        System.out.println("googleLoginUrl");
         response.sendRedirect(googleLoginUrl);
     }
 
