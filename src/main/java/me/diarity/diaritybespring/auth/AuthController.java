@@ -76,6 +76,7 @@ public class AuthController {
 
     @GetMapping("/status")
     public AuthResponse getStatus(HttpServletRequest request) {
+        log.warn("getStatus");
         // Find the "access_token" cookie
         if (request.getCookies() == null) {
             throw new RuntimeException("No access token");
