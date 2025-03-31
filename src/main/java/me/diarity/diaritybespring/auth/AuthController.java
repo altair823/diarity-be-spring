@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.diarity.diaritybespring.auth.dto.AuthResponse;
 import me.diarity.diaritybespring.auth.dto.JwtResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,11 +29,12 @@ public class AuthController {
     private Integer refreshExpiration;
 
     private final AuthService authService;
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     @GetMapping("/login/google")
     public void googleLogin(HttpServletResponse response) throws IOException {
         String googleLoginUrl = authService.getGoogleLoginUrl();
-        System.out.println("googleLoginUrl");
+        log.warn("googleLoginUrl");
         response.sendRedirect(googleLoginUrl);
     }
 
@@ -67,8 +70,8 @@ public class AuthController {
         refreshTokenCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshTokenCookie);
 
-        System.out.println("Access Token Cookie: " + accessTokenCookie.getMaxAge());
-        System.out.println("Refresh Token Cookie: " + refreshTokenCookie.getMaxAge());
+        log.warn("access_token maxAge: {}", accessTokenCookie.getMaxAge());
+        log.warn("refresh_token maxAge: {}", refreshTokenCookie.getMaxAge());
     }
 
     @GetMapping("/status")
