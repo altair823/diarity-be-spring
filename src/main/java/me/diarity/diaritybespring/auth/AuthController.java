@@ -65,6 +65,9 @@ public class AuthController {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshTokenCookie);
+
+        System.out.println("Access Token Cookie: " + accessTokenCookie.getMaxAge());
+        System.out.println("Refresh Token Cookie: " + refreshTokenCookie.getMaxAge());
     }
 
     @GetMapping("/status")
