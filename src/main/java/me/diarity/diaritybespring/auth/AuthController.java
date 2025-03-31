@@ -43,14 +43,6 @@ public class AuthController {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
         SetCookiesFromJwtResponse(response, jwtResponse);
 
-        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
-        accessTokenCookie.setMaxAge(expiration);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setAttribute("SameSite", "None");
-        response.addCookie(accessTokenCookie);
-
         response.sendRedirect(redirectAfterLogin);
     }
 
@@ -68,6 +60,7 @@ public class AuthController {
         accessTokenCookie.setMaxAge(expiration);
         accessTokenCookie.setSecure(true);
         accessTokenCookie.setAttribute("SameSite", "None");
+        accessTokenCookie.setDomain("dev.diarity.me");
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
@@ -76,6 +69,7 @@ public class AuthController {
         refreshTokenCookie.setMaxAge(refreshExpiration);
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setAttribute("SameSite", "None");
+        refreshTokenCookie.setDomain("dev.diarity.me");
         response.addCookie(refreshTokenCookie);
 
         log.error("access_token maxAge: {}", accessTokenCookie.getMaxAge());
