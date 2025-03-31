@@ -55,13 +55,15 @@ public class AuthController {
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(expiration);
         accessTokenCookie.setSecure(true);
+        accessTokenCookie.setAttribute("SameSite", "None");
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(refreshExpiration);
-        accessTokenCookie.setSecure(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshTokenCookie);
     }
 
