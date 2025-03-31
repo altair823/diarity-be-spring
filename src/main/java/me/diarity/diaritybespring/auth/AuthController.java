@@ -20,6 +20,12 @@ public class AuthController {
     @Value("${redirect-after-login}")
     private String redirectAfterLogin;
 
+    @Value("${jwt.expiration}")
+    private Integer expiration;
+
+    @Value("${jwt.refreshExpiration}")
+    private Integer refreshExpiration;
+
     private final AuthService authService;
 
     @GetMapping("/login/google")
@@ -47,11 +53,13 @@ public class AuthController {
         Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(expiration);
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(refreshExpiration);
         response.addCookie(refreshTokenCookie);
     }
 
