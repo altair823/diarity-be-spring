@@ -43,6 +43,14 @@ public class AuthController {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
         SetCookiesFromJwtResponse(response, jwtResponse);
 
+        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
+        accessTokenCookie.setMaxAge(expiration);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setAttribute("SameSite", "None");
+        response.addCookie(accessTokenCookie);
+
         response.sendRedirect(redirectAfterLogin);
     }
 
@@ -70,13 +78,12 @@ public class AuthController {
         refreshTokenCookie.setAttribute("SameSite", "None");
         response.addCookie(refreshTokenCookie);
 
-        log.warn("access_token maxAge: {}", accessTokenCookie.getMaxAge());
-        log.warn("refresh_token maxAge: {}", refreshTokenCookie.getMaxAge());
+        log.error("access_token maxAge: {}", accessTokenCookie.getMaxAge());
+        log.error("refresh_token maxAge: {}", refreshTokenCookie.getMaxAge());
     }
 
     @GetMapping("/status")
     public AuthResponse getStatus(HttpServletRequest request) {
-        log.warn("getStatus");
         // Find the "access_token" cookie
         if (request.getCookies() == null) {
             throw new RuntimeException("No access token");
