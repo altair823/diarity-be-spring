@@ -6,8 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.diarity.diaritybespring.auth.dto.AuthResponse;
 import me.diarity.diaritybespring.auth.dto.JwtResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +27,6 @@ public class AuthController {
     private Integer refreshExpiration;
 
     private final AuthService authService;
-    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     @GetMapping("/login/google")
     public void googleLogin(HttpServletResponse response) throws IOException {
@@ -40,7 +37,19 @@ public class AuthController {
     @GetMapping("/login/google/callback")
     public void googleLoginCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
-        SetCookiesFromJwtResponse(response, jwtResponse);
+        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(expiration);
+        accessTokenCookie.setSecure(true);
+        response.addCookie(accessTokenCookie);
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(refreshExpiration);
+        refreshTokenCookie.setSecure(true);
+        response.addCookie(refreshTokenCookie);
         response.sendRedirect(redirectAfterLogin);
     }
 
