@@ -19,7 +19,7 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private static final String[] excludePathPatterns = {
-            "/index",
+            "/auth/refresh",
             "/auth/login/google",
             "/auth/login/google/callback",
             "/auth/login/google/withaccesstoken",
