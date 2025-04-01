@@ -34,21 +34,13 @@ public class AuthController {
     @GetMapping("/login/google")
     public void googleLogin(HttpServletResponse response) throws IOException {
         String googleLoginUrl = authService.getGoogleLoginUrl();
-        log.warn("googleLoginUrl");
         response.sendRedirect(googleLoginUrl);
     }
 
     @GetMapping("/login/google/callback")
     public void googleLoginCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
-
-        String accessCookieStr = String.format("access_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
-                jwtResponse.getAccessToken(), expiration, "/", "dev.diarity.me");
-        response.addHeader("Set-Cookie", accessCookieStr);
-        String refreshCookieStr = String.format("refresh_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
-                jwtResponse.getRefreshToken(), refreshExpiration, "/", "dev.diarity.me");
-        response.addHeader("Set-Cookie", refreshCookieStr);
-
+        SetCookiesFromJwtResponse(response, jwtResponse);
         response.sendRedirect(redirectAfterLogin);
     }
 
@@ -60,15 +52,19 @@ public class AuthController {
     }
 
     private void SetCookiesFromJwtResponse(HttpServletResponse response, JwtResponse jwtResponse) {
-        // SameSite=None 설정 (ResponseHeader에 직접 추가)
-        String accessCookieStr = String.format("access_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
-                jwtResponse.getAccessToken(), expiration, "/", "dev.diarity.me");
-        response.addHeader("Set-Cookie", accessCookieStr);
+        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(expiration);
+        accessTokenCookie.setSecure(true);
+        response.addCookie(accessTokenCookie);
 
-        // 리프레시 토큰도 동일하게 설정
-        String refreshCookieStr = String.format("refresh_token=%s; Max-Age=%d; Path=%s; Domain=%s; HttpOnly; Secure; SameSite=None",
-                jwtResponse.getRefreshToken(), refreshExpiration, "/", "dev.diarity.me");
-        response.addHeader("Set-Cookie", refreshCookieStr);
+        Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(refreshExpiration);
+        refreshTokenCookie.setSecure(true);
+        response.addCookie(refreshTokenCookie);
     }
 
     @GetMapping("/status")
