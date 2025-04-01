@@ -78,6 +78,17 @@ public class AuthController {
         return authService.getStatus(accessToken);
     }
 
+    @GetMapping("/refresh")
+    public void refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = Arrays.stream(request.getCookies())
+                .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No refresh token"));
+        JwtResponse jwtResponse = authService.refresh(refreshToken);
+        SetCookiesFromJwtResponse(response, jwtResponse);
+    }
+
     @PostMapping("/logout")
     public void logout(HttpServletResponse response) {
         Cookie accessTokenCookie = new Cookie("access_token", "");
