@@ -9,4 +9,5 @@ import me.diarity.diaritybespring.users.dto.UsersResponse;
 public class AuthResponse {
     private String status;
     private UsersResponse user;
+    private String version;
 }

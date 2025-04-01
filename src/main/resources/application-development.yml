@@ -24,6 +24,3 @@ spring:
             redirect-uri: https://dev-api.diarity.me/auth/login/google/callback
 
 redirect-after-login: https://dev.diarity.me
-logging:
-  level:
-    root: debug
