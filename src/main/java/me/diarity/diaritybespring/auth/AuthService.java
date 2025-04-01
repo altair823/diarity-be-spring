@@ -134,7 +134,6 @@ public class AuthService {
         return AuthResponse.builder()
                 .status("success")
                 .user(usersResponse)
-                .version("1.0.0")
                 .build();
     }
 }

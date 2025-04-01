@@ -37,19 +37,7 @@ public class AuthController {
     @GetMapping("/login/google/callback")
     public void googleLoginCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
-        Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(expiration);
-        accessTokenCookie.setSecure(true);
-        response.addCookie(accessTokenCookie);
-
-        Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(refreshExpiration);
-        refreshTokenCookie.setSecure(true);
-        response.addCookie(refreshTokenCookie);
+        SetCookiesFromJwtResponse(response, jwtResponse);
         response.sendRedirect(redirectAfterLogin);
     }
 
