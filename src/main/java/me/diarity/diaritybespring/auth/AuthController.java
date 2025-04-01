@@ -20,6 +20,12 @@ public class AuthController {
     @Value("${redirect-after-login}")
     private String redirectAfterLogin;
 
+    @Value("${jwt.expiration}")
+    private Integer expiration;
+
+    @Value("${jwt.refreshExpiration}")
+    private Integer refreshExpiration;
+
     private final AuthService authService;
 
     @GetMapping("/login/google")
@@ -32,7 +38,6 @@ public class AuthController {
     public void googleLoginCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
         JwtResponse jwtResponse = authService.googleLoginCallback(authService.getGoogleAccessToken(code));
         SetCookiesFromJwtResponse(response, jwtResponse);
-
         response.sendRedirect(redirectAfterLogin);
     }
 
@@ -47,11 +52,15 @@ public class AuthController {
         Cookie accessTokenCookie = new Cookie("access_token", jwtResponse.getAccessToken());
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(expiration);
+        accessTokenCookie.setSecure(true);
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", jwtResponse.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(refreshExpiration);
+        refreshTokenCookie.setSecure(true);
         response.addCookie(refreshTokenCookie);
     }
 
