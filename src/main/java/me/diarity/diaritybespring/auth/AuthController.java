@@ -78,7 +78,7 @@ public class AuthController {
         return authService.getStatus(accessToken);
     }
 
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = Arrays.stream(request.getCookies())
                 .filter(cookie -> "refresh_token".equals(cookie.getName()))
