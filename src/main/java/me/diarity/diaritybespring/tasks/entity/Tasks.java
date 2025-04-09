@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.diarity.diaritybespring.users.Users;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -20,9 +23,12 @@ public class Tasks {
     @ManyToOne
     private Users user;
 
+    @CreatedDate
+    private Instant createdAt;
+
     private String title;
     private String description;
     private Boolean isCompleted;
-
+    private Long duration;
 
 }
