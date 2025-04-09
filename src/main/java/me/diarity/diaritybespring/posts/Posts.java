@@ -54,8 +54,4 @@ public class Posts {
     public void addComment() {
         this.commentsCount++;
     }
-
-    public void removeComment() {
-        this.commentsCount--;
-    }
 }
