@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class TasksCreateRequest {
-    private String userEmail;
     private String title;
     private String description;
 }

@@ -11,6 +11,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class PostsWithLikeResponse {
     private Long id;
+    private String bookTitle;
     private String title;
     private String content;
     private String authorEmail;
