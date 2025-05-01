@@ -18,7 +18,6 @@ public interface PostsMapper {
     PostsMapper INSTANCE = Mappers.getMapper(PostsMapper.class);
 
     @Mappings({
-            @Mapping(target = "author", source = "author"),
             @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "modifiedAt", source = "modifiedAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "deletedAt", source = "deletedAt", qualifiedByName = "mapInstantToLocalDateTime"),
@@ -29,6 +28,7 @@ public interface PostsMapper {
     @Mappings({
             @Mapping(target = "author", source = "usersResponse"),
             @Mapping(target = "id", source = "postsWithLikeResponse.id"),
+            @Mapping(target = "bookTitle", source = "postsWithLikeResponse.bookTitle"),
             @Mapping(target = "createdAt", source = "postsWithLikeResponse.createdAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "modifiedAt", source = "postsWithLikeResponse.modifiedAt", qualifiedByName = "mapInstantToLocalDateTime"),
             @Mapping(target = "deletedAt", source = "postsWithLikeResponse.deletedAt", qualifiedByName = "mapInstantToLocalDateTime"),

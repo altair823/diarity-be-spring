@@ -24,7 +24,7 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
 
     @Query(
             "SELECT new me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse(" +
-                    "p.id, p.title, p.content, p.author.email, p.createdAt, p.modifiedAt, " +
+                    "p.id, p.bookTitle, p.title, p.content, p.author.email, p.createdAt, p.modifiedAt, " +
                     "p.isPublic, p.isDeleted, p.deletedAt, p.likesCount, p.commentsCount, " +
                     "CASE WHEN l.id IS NULL THEN false ELSE true END) " +
                     "FROM Posts p " +

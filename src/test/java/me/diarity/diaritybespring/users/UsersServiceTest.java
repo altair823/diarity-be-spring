@@ -23,18 +23,19 @@ public class UsersServiceTest {
     @InjectMocks
     private UsersService usersService;
 
+    private final Long id = 1L;
+    private final Users user = Users.builder()
+            .id(id)
+            .email("testemail@gmail.com")
+            .name("testUser")
+            .picture("testPicture")
+            .role("NORMAL")
+            .displayName("testUser")
+            .build();
+
     @Test
     public void findById() {
         // given
-        Long id = 1L;
-        Users user = Users.builder()
-                .id(id)
-                .email("testemail@gmail.com")
-                .name("testUser")
-                .picture("testPicture")
-                .role("NORMAL")
-                .displayName("testUser")
-                .build();
         when(usersRepository.findById(id)).thenReturn(Optional.of(user));
 
         // when
@@ -52,7 +53,6 @@ public class UsersServiceTest {
     @Test
     public void findByIdFail() {
         // given
-        Long id = 1L;
         when(usersRepository.findById(id)).thenReturn(Optional.empty());
 
         // when
@@ -65,23 +65,14 @@ public class UsersServiceTest {
     @Test
     public void findByEmail() {
         // given
-        String email = "testemail@gmail.com";
-        Users user = Users.builder()
-                .id(1L)
-                .email(email)
-                .name("testUser")
-                .picture("testPicture")
-                .role("NORMAL")
-                .displayName("testUser")
-                .build();
-        when(usersRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
         // when
-        UsersResponse usersResponse = usersService.findByEmail(email);
+        UsersResponse usersResponse = usersService.findByEmail(user.getEmail());
 
         // then
         assertThat(usersResponse.getId()).isEqualTo(user.getId());
-        assertThat(usersResponse.getEmail()).isEqualTo(email);
+        assertThat(usersResponse.getEmail()).isEqualTo(user.getEmail());
         assertThat(usersResponse.getName()).isEqualTo(user.getName());
         assertThat(usersResponse.getPicture()).isEqualTo(user.getPicture());
         assertThat(usersResponse.getRole()).isEqualTo(user.getRole());
@@ -91,13 +82,12 @@ public class UsersServiceTest {
     @Test
     public void findByEmailFail() {
         // given
-        String email = "testemail2@gmail.com";
-        when(usersRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
 
         // when
         // then
         // throws IllegalArgumentException
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> usersService.findByEmail(email));
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> usersService.findByEmail(user.getEmail()));
         assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
     }
 
@@ -130,5 +120,63 @@ public class UsersServiceTest {
         assertThat(usersResponse.getPicture()).isEqualTo(usersSaveRequest.getPicture());
         assertThat(usersResponse.getRole()).isEqualTo("NORMAL");
         assertThat(usersResponse.getDisplayName()).isEqualTo(usersSaveRequest.getName());
+    }
+
+    @Test
+    public void findEntityById() {
+        // given
+        when(usersRepository.findById(id)).thenReturn(Optional.of(user));
+
+        // when
+        Users users = usersService.findEntityById(id);
+
+        // then
+        assertThat(users.getId()).isEqualTo(id);
+        assertThat(users.getEmail()).isEqualTo(user.getEmail());
+        assertThat(users.getName()).isEqualTo(user.getName());
+        assertThat(users.getPicture()).isEqualTo(user.getPicture());
+        assertThat(users.getRole()).isEqualTo(user.getRole());
+        assertThat(users.getDisplayName()).isEqualTo(user.getDisplayName());
+    }
+
+    @Test
+    public void findEntityByIdFail() {
+        // given
+        when(usersRepository.findById(id)).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> usersService.findEntityById(id));
+        assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
+    }
+
+    @Test
+    public void findEntityByEmail() {
+        // given
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        // when
+        Users users = usersService.findEntityByEmail(user.getEmail());
+
+        // then
+        assertThat(users.getId()).isEqualTo(user.getId());
+        assertThat(users.getEmail()).isEqualTo(user.getEmail());
+        assertThat(users.getName()).isEqualTo(user.getName());
+        assertThat(users.getPicture()).isEqualTo(user.getPicture());
+        assertThat(users.getRole()).isEqualTo(user.getRole());
+        assertThat(users.getDisplayName()).isEqualTo(user.getDisplayName());
+    }
+
+    @Test
+    public void findEntityByEmailFail() {
+        // given
+        when(usersRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // when
+        // then
+        // throws IllegalArgumentException
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> usersService.findEntityByEmail(user.getEmail()));
+        assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
     }
 }

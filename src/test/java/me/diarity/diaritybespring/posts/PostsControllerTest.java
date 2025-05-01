@@ -40,6 +40,23 @@ public class PostsControllerTest {
             .displayName("testUser")
             .build();
 
+    private final LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
+    private final LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
+    private final PostsResponse postsResponse = PostsResponse.builder()
+            .id(1L)
+            .bookTitle("testBookTitle")
+            .title("testTitle")
+            .content("testContent")
+            .author(author)
+            .createdAt(postCreatedAt)
+            .modifiedAt(postModifiedAt)
+            .isPublic(true)
+            .isDeleted(false)
+            .deletedAt(null)
+            .likesCount(0)
+            .commentsCount(0)
+            .build();
+
     @BeforeEach
     public void setUp() {
         // Create a mock Authentication object
@@ -63,6 +80,7 @@ public class PostsControllerTest {
         LocalDateTime post2ModifiedAt = LocalDateTime.of(2022, 1, 4, 0, 0);
         PostsResponse postsResponse1 = PostsResponse.builder()
                 .id(1L)
+                .bookTitle("testBookTitle")
                 .title("testTitle")
                 .content("testContent")
                 .author(author)
@@ -76,6 +94,7 @@ public class PostsControllerTest {
                 .build();
         PostsResponse postsResponse2 = PostsResponse.builder()
                 .id(2L)
+                .bookTitle("testBookTitle2")
                 .title("testTitle2")
                 .content("testContent2")
                 .author(author)
@@ -125,22 +144,10 @@ public class PostsControllerTest {
         // given
         LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
         LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
-        PostsResponse postsResponse = PostsResponse.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
+                .bookTitle("testBookTitle")
                 .build();
         when(postsService.create(postsCreateRequest, author.getEmail())).thenReturn(postsResponse);
 
@@ -164,21 +171,6 @@ public class PostsControllerTest {
     @Test
     public void getPostById() {
         // given
-        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
-        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
-        PostsResponse postsResponse = PostsResponse.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
         when(postsService.findById(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when
@@ -201,10 +193,9 @@ public class PostsControllerTest {
     @Test
     public void likePost() {
         // given
-        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
-        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
         PostsResponse postsResponse = PostsResponse.builder()
                 .id(1L)
+                .bookTitle("testBookTitle")
                 .title("testTitle")
                 .content("testContent")
                 .author(author)
@@ -249,21 +240,6 @@ public class PostsControllerTest {
     @Test
     public void unlikePost() {
         // given
-        LocalDateTime postCreatedAt = LocalDateTime.of(2022, 1, 1, 0, 0);
-        LocalDateTime postModifiedAt = LocalDateTime.of(2022, 1, 2, 0, 0);
-        PostsResponse postsResponse = PostsResponse.builder()
-                .id(1L)
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(postCreatedAt)
-                .modifiedAt(postModifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(0)
-                .commentsCount(0)
-                .build();
         when(postsService.unlike(1L, author.getEmail())).thenReturn(postsResponse);
 
         // when

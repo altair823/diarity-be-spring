@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @Setter
 public class PostsResponse {
     @NonNull
-    private Long id; // 나중에 확인해보고 필요없으면 지울 것
+    private Long id;
+    @NonNull
+    private String bookTitle;
     @NonNull
     private String title;
     @NonNull
