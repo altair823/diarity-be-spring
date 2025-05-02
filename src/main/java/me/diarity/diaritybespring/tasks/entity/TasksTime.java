@@ -22,6 +22,7 @@ public class TasksTime {
     @ManyToOne
     private Tasks task;
 
+    @Enumerated(EnumType.STRING)
     private TaskTimeType timeType;
 
     private Instant time;
