@@ -136,4 +136,19 @@ public class AuthService {
                 .user(usersResponse)
                 .build();
     }
+
+    public JwtResponse refresh(String refreshToken) {
+        String email = jwtUtils.getEmail(refreshToken);
+        UsersResponse usersResponse = usersService.findByEmail(email);
+        String accessToken = jwtUtils.generateToken(
+                usersResponse.getDisplayName(),
+                usersResponse.getRole(),
+                usersResponse.getEmail(),
+                expiration
+        );
+        return JwtResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 }

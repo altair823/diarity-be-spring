@@ -62,6 +62,7 @@ public class PostsServiceTest {
     private Posts createPosts(Instant createdAt, Instant modifiedAt, int likesCount) {
         return Posts.builder()
                 .id(1L)
+                .bookTitle("testBookTitle")
                 .title("testTitle")
                 .content("testContent")
                 .author(author)
@@ -149,6 +150,7 @@ public class PostsServiceTest {
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
+                .bookTitle("testBookTitle")
                 .build();
 
         // when
@@ -164,6 +166,7 @@ public class PostsServiceTest {
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
                 .title("testTitle")
                 .content("testContent")
+                .bookTitle("testBookTitle")
                 .build();
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.empty());
 
@@ -181,6 +184,7 @@ public class PostsServiceTest {
         when(postsRepository.findByIdWithLiked(1L, author.getId()))
                 .thenReturn(Optional.of(PostsWithLikeResponse.builder()
                         .id(posts.getId())
+                        .bookTitle(posts.getBookTitle())
                         .title(posts.getTitle())
                         .content(posts.getContent())
                         .authorEmail(author.getEmail())

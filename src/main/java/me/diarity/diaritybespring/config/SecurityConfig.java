@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/auth/login/google/callback",
                                 "/auth/login/google/withaccesstoken",
                                 "/auth/status",
+                                "/auth/refresh",
                                 "/posts",
                                 "/posts/**"
                         ).permitAll()
