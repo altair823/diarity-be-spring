@@ -14,20 +14,13 @@ public interface UsersMapper {
     UsersResponse toResponse(Users user);
 
     @Mappings({
-            @Mapping(
-                    target = "id", ignore = true
-            )
+            @Mapping(target = "id", ignore = true)
     })
     Users toEntity(UsersSaveRequest usersSaveRequest);
 
     @Mappings({
-            @Mapping(
-                    target = "role", constant = "NORMAL"
-            ),
-            @Mapping(
-                    target = "displayName", source = "name"
-            )
-    }
-    )
+            @Mapping(target = "role", constant = "NORMAL"),
+            @Mapping(target = "displayName", source = "name")
+    })
     UsersSaveRequest toRequest(LoginUserInfoResponse loginUserInfoResponse);
 }

@@ -357,6 +357,115 @@ public class CommentsServiceTest {
     }
 
     @Test
+    public void findAllByAnonymous() {
+        // given
+        when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(commentsRepository.findAllByPostId(post.getId())).thenReturn(List.of(
+                Comments.builder()
+                        .id(comments.getId())
+                        .author(user)
+                        .post(post)
+                        .createdAt(createdAt)
+                        .modifiedAt(modifiedAt)
+                        .content(comments.getContent())
+                        .isDeleted(comments.getIsDeleted())
+                        .deletedAt(comments.getDeletedAt())
+                        .likesCount(comments.getLikesCount())
+                        .build(),
+                Comments.builder()
+                        .id(4L)
+                        .author(user)
+                        .post(post)
+                        .createdAt(createdAt)
+                        .modifiedAt(modifiedAt)
+                        .content("testComment2")
+                        .isDeleted(false)
+                        .deletedAt(null)
+                        .likesCount(0)
+                        .build()
+        ));
+        when(commentsHierarchyRepository.findByChildCommentsId(comments.getId()))
+                .thenReturn(
+                        Optional.ofNullable(CommentsHierarchy.builder()
+                                .id(new CommentsHierarchyId(
+                                        comments.getId(),
+                                        4L
+                                ))
+                                .parentComments(comments)
+                                .childComments(Comments.builder()
+                                        .id(4L)
+                                        .author(user)
+                                        .post(post)
+                                        .createdAt(createdAt)
+                                        .modifiedAt(modifiedAt)
+                                        .content("testComment2")
+                                        .isDeleted(false)
+                                        .deletedAt(null)
+                                        .likesCount(0)
+                                        .build())
+                                .build())
+                );
+
+        // when
+        List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId(), "anonymousUser");
+
+        // then
+        assertThat(commentsResponses.size()).isEqualTo(2);
+        assertCommentsResponse(commentsResponses.getFirst(), comments, user, post);
+        assertCommentsResponse(commentsResponses.get(1), Comments.builder()
+                .id(4L)
+                .author(user)
+                .post(post)
+                .createdAt(createdAt)
+                .modifiedAt(modifiedAt)
+                .content("testComment2")
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .build(), user, post);
+        assertThat(commentsResponses.getFirst().getParentCommentId()).isEqualTo(3L);
+    }
+
+    @Test
+    public void findAllByAnonymousIfParentCommentPresent() {
+        // given
+        Comments parentComments = Comments.builder()
+                .id(4L)
+                .content("testParentComment")
+                .author(user)
+                .post(post)
+                .createdAt(createdAt)
+                .modifiedAt(modifiedAt)
+                .isDeleted(false)
+                .deletedAt(null)
+                .likesCount(0)
+                .build();
+        when(postsRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(commentsRepository.findAllByPostId(post.getId())).thenReturn(List.of(
+                Comments.builder()
+                        .id(comments.getId())
+                        .author(user)
+                        .post(post)
+                        .createdAt(createdAt)
+                        .modifiedAt(modifiedAt)
+                        .content(comments.getContent())
+                        .isDeleted(comments.getIsDeleted())
+                        .deletedAt(comments.getDeletedAt())
+                        .likesCount(comments.getLikesCount())
+                        .build(),
+                parentComments
+        ));
+
+        // when
+        List<CommentsResponse> commentsResponses = commentsService.findAll(post.getId(), "anonymousUser");
+
+        // then
+        assertThat(commentsResponses.size()).isEqualTo(2);
+        assertCommentsResponse(commentsResponses.getFirst(), comments, user, post);
+        assertCommentsResponse(commentsResponses.getLast(), parentComments, user, post);
+    }
+
+    @Test
     public void findAllFailToFindPost() {
         // given
         when(postsRepository.findById(post.getId())).thenReturn(Optional.empty());
