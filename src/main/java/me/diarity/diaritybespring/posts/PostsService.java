@@ -65,7 +65,6 @@ public class PostsService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
             PostsWithLikeResponse postsWithLikeResponse = postsRepository.findByIdWithLiked(id, user.getId())
                     .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-            System.out.println(postsWithLikeResponse);
             return PostsMapper.INSTANCE.toResponse(postsWithLikeResponse, UsersMapper.INSTANCE.toResponse(user));
         }
     }
