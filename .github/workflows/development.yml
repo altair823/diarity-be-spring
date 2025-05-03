@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - develop
+      - development-disable
 jobs:
   test:
     permissions:
@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
   deploy:
     needs: test
     permissions:
@@ -25,9 +26,10 @@ jobs:
       SERVER_PORT: ${{ secrets.SERVER_PORT }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
     with:
       APP_NAME: ${{ vars.APP_NAME }}
-      # APP_NAME: diarity-be
+      # APP_NAME: diary-be-springboot
       APP_PATH: ${{ vars.APP_PATH }}
-      # APP_PATH: /home/ubuntu/diarity-be
+      # APP_PATH: /home/ubuntu/diary-be-springboot
       PROFILE_NAME: development

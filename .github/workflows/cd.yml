@@ -17,6 +17,8 @@ on:
         required: true
       SLACK_WEBHOOK_URL:
         required: true
+      JASYPT_ENCRYPTOR_PASSWORD:
+        required: true
     inputs:
       APP_NAME:
         required: true
@@ -66,16 +68,19 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             export APP_NAME=${{ inputs.APP_NAME }}
-            export $PROFILE_NAME=${{ inputs.PROFILE_NAME }}
+            export PROFILE_NAME=${{ inputs.PROFILE_NAME }}
             export APP_PATH=${{ inputs.APP_PATH }}
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
+            docker login altairharbor.duckdns.org -u ${{ secrets.HARBOR_USERNAME }} -p ${{ secrets.HARBOR_PASSWORD }}
+            docker pull altairharbor.duckdns.org/diarity-be/$APP_NAME:$PROFILE_NAME
             docker stop $APP_NAME || true
             docker rm $APP_NAME || true
-            docker run -d 
-              --name $APP_NAME 
-              --restart always
-              -p 8080:8080
-              ${{ secrets.DOCKERHUB_USERNAME }}/$APP_NAME:$PROFILE_NAME
+            docker run -d \
+              --name $APP_NAME \
+              --restart always \
+              -p 8080:8080 \
+              -e JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} \
+              -e SPRING_PROFILES_ACTIVE=${{ inputs.PROFILE_NAME }} \
+              altairharbor.duckdns.org/diarity-be/$APP_NAME:$PROFILE_NAME
             docker system prune -f
 
       - name: Notify to Slack

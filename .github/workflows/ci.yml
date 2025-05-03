@@ -2,8 +2,11 @@ name: CI for Spring Boot
 
 on:
   workflow_call:
-    SLACK_WEBHOOK_URL:
-      required: true
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+      JASYPT_ENCRYPTOR_PASSWORD:
+        required: true
 
 jobs:
   test:
@@ -22,8 +25,15 @@ jobs:
           distribution: 'corretto'
           java-version: '21'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set environment variables
+        run: |
+          echo "JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Build with Gradle
+        run: ./gradlew build
 
       - name: Run tests
         run: ./gradlew test

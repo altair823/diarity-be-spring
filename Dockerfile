@@ -8,10 +8,10 @@ WORKDIR /home/gradle/project
 COPY --chown=gradle:gradle . .
 
 # Build the application
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon -x test
 
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk-bookworm
+FROM amazoncorretto:21-alpine3.21
 
 # Set the working directory
 WORKDIR /app
@@ -23,4 +23,4 @@ COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=secrets,${SPRING_PROFILES_ACTIVE}", "--jasypt.encryptor.password=${JASYPT_ENCRYPTOR_PASSWORD}"]

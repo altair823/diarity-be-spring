@@ -37,3 +37,6 @@ out/
 .vscode/
 
 database/mysql
+
+application-jasypt.yml
+/src/main/generated/
