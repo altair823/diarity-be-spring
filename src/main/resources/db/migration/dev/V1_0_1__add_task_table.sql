@@ -18,6 +18,3 @@ CREATE TABLE tasks_time (
 
     CONSTRAINT fk_tasks_time_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 );
-
-ALTER TABLE posts
-    ADD COLUMN book_title VARCHAR(255) DEFAULT NULL;
