@@ -21,6 +21,7 @@ COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 
 # Expose the port the application runs on
 EXPOSE 8080
+EXPOSE 9091
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=secrets,${SPRING_PROFILES_ACTIVE}", "--jasypt.encryptor.password=${JASYPT_ENCRYPTOR_PASSWORD}"]
