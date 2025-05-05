@@ -54,7 +54,8 @@ public class SecurityConfig {
                                 "/auth/status",
                                 "/auth/refresh",
                                 "/posts",
-                                "/posts/**"
+                                "/posts/**",
+                                "/actuator/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/posts/{id}/new-comments"
