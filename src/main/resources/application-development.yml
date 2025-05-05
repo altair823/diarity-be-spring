@@ -31,6 +31,8 @@ spring:
           google:
             redirect-uri: https://dev-api.diarity.me/auth/login/google/callback
 
+redirect-after-login: https://dev.diarity.me
+
 management:
   server:
     port: 9091
@@ -41,5 +43,3 @@ management:
   endpoint:
     health:
       show-details: always
-
-redirect-after-login: https://dev.diarity.me
