@@ -38,5 +38,15 @@ spring:
               - email
               - profile
               - openid
+management:
+  server:
+    port: 9091
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 
 redirect-after-login: http://localhost:3000
