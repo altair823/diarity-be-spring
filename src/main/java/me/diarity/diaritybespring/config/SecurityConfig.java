@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(
                                 "/h2-console/**",
+                                "/index",
                                 "/auth/login/google",
                                 "/auth/login/google/callback",
                                 "/auth/login/google/withaccesstoken",
