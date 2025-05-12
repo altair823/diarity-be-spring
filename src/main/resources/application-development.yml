@@ -24,7 +24,7 @@ spring:
     username: ENC(TwJf8ipc9jjUbnaV+/J95gvH+sPS+JvMfr3uGhDB8gy61ksIsLykfDJVEeg2n6Sh)
     password: ENC(/SXZTHWDktYfpTm5yUqGOujbzoPhFreIaaFsD50WlFPPmFF9O8tJt4X3Hf36WcXOTQhftA3yzFMaKiIPgOKFYw==)
     hikari:
-      maximum-pool-size: 80
+      maximum-pool-size: 30
 
   security:
     oauth2:
