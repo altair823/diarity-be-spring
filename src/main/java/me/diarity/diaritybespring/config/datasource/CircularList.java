@@ -11,10 +11,7 @@ public class CircularList<T> {
     }
 
     public T getOne() {
-        counter++;
-        if (counter >= list.size()) {
-            counter = 0;
-        }
+        counter = (counter + 1) % list.size();
         return list.get(counter);
     }
 }
