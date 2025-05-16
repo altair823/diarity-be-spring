@@ -15,6 +15,6 @@ public class CircularList<T> {
         if (counter >= list.size()) {
             counter = 0;
         }
-        return list.get(++counter);
+        return list.get(counter);
     }
 }
