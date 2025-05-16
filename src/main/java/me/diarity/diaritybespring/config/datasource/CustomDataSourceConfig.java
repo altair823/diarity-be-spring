@@ -37,13 +37,15 @@ public class CustomDataSourceConfig {
     }
 
     public DataSource createDataSource(String url) {
-        return DataSourceBuilder.create()
+        HikariDataSource dataSource = DataSourceBuilder.create()
                 .type(HikariDataSource.class)
                 .url(url)
                 .driverClassName("com.mysql.cj.jdbc.Driver")
                 .username(databaseProperty.getUsername())
                 .password(databaseProperty.getPassword())
                 .build();
+        dataSource.setMaximumPoolSize(databaseProperty.getHikari().getMaximumPoolSize());
+        return dataSource;
     }
 
     @Bean

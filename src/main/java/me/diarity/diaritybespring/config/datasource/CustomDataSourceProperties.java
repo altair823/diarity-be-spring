@@ -15,11 +15,18 @@ public class CustomDataSourceProperties {
     private String username;
     private String password;
     private final Map<String, Slave> slaves = new HashMap<>();
+    private final Hikari hikari = new Hikari();
 
     @Getter
     @Setter
     public static class Slave {
         private String url;
         private String tag;
+    }
+
+    @Getter
+    @Setter
+    public static class Hikari {
+        private int maximumPoolSize = 10;
     }
 }
