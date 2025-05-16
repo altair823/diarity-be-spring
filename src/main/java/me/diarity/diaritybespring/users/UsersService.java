@@ -5,9 +5,11 @@ import me.diarity.diaritybespring.users.dto.UsersMapper;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
 import me.diarity.diaritybespring.users.dto.UsersSaveRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UsersService {
     private final UsersRepository usersRepository;
 
@@ -21,6 +23,7 @@ public class UsersService {
         return UsersMapper.INSTANCE.toResponse(user);
     }
 
+    @Transactional
     public UsersResponse save(UsersSaveRequest usersSaveRequest) {
         Users user = usersRepository.save(UsersMapper.INSTANCE.toEntity(usersSaveRequest));
         return UsersMapper.INSTANCE.toResponse(user);

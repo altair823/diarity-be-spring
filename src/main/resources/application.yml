@@ -2,4 +2,4 @@ spring:
   application:
     name: diarity-be
   profiles:
-    active: test, jasypt, secrets
+    active: development, jasypt, secrets

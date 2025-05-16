@@ -14,11 +14,13 @@ import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
 import me.diarity.diaritybespring.users.dto.UsersMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostsService {
     private final PostsRepository postsRepository;
     private final UsersRepository usersRepository;
@@ -47,6 +49,7 @@ public class PostsService {
         }
     }
 
+    @Transactional
     public PostsResponse create(PostsCreateRequest postsCreateRequest, String userEmail) {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
@@ -69,6 +72,7 @@ public class PostsService {
         }
     }
 
+    @Transactional
     public PostsResponse like(Long id, String userEmail) {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
@@ -85,6 +89,7 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
+    @Transactional
     public PostsResponse unlike(Long id, String string) {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
@@ -101,6 +106,7 @@ public class PostsService {
         return PostsMapper.INSTANCE.toResponse(posts);
     }
 
+    @Transactional
     public CommentsResponse createComment(CommentsCreateRequest commentsCreateRequest, String userEmail, Long postId) {
         return commentsService.create(commentsCreateRequest, userEmail, postId);
     }
@@ -109,10 +115,12 @@ public class PostsService {
         return commentsService.findAll(postId, userEmail);
     }
 
+    @Transactional
     public CommentsResponse likeComment(Long commentId, String userEmail) {
         return commentsService.like(commentId, userEmail);
     }
 
+    @Transactional
     public CommentsResponse unlikeComment(Long commentId, String userEmail) {
         return commentsService.unlike(commentId, userEmail);
     }

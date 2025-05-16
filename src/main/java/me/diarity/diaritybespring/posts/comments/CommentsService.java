@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentsService {
     private final CommentsRepository commentRepository;
     private final CommentsHierarchyRepository commentsHierarchyRepository;
