@@ -48,13 +48,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(
                                 "/h2-console/**",
+                                "/index",
                                 "/auth/login/google",
                                 "/auth/login/google/callback",
                                 "/auth/login/google/withaccesstoken",
                                 "/auth/status",
                                 "/auth/refresh",
                                 "/posts",
-                                "/posts/**"
+                                "/posts/**",
+                                "/actuator/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/posts/{id}/new-comments"

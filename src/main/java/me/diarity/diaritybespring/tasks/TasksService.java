@@ -8,16 +8,19 @@ import me.diarity.diaritybespring.tasks.entity.Tasks;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TasksService {
     private final TasksRepository tasksRepository;
     private final UsersService usersService;
 
+    @Transactional
     public TasksResponse create(TasksCreateRequest tasksCreateRequest, String userEmail) {
         Users user = usersService.findEntityByEmail(userEmail);
         Tasks tasks = Tasks.builder()
@@ -31,7 +34,6 @@ public class TasksService {
         Tasks resultTask = tasksRepository.save(tasks);
         return TasksMapper.INSTANCE.toTasksResponse(resultTask);
     }
-
 
     public List<TasksResponse> findAll(String userEmail) {
         Users user = usersService.findEntityByEmail(userEmail);
