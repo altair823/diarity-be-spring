@@ -143,4 +143,8 @@ public class CommentsService {
 
         return CommentsMapper.INSTANCE.toResponse(comments);
     }
+
+    public int countCommentsByUserId(Long userId) {
+        return commentRepository.countByAuthorId(userId);
+    }
 }

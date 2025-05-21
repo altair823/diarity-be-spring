@@ -32,4 +32,6 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
                     "WHERE p.id = :postId"
     )
     Optional<PostsWithLikeResponse> findByIdWithLiked(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    Integer countByAuthorId(Long authorId);
 }

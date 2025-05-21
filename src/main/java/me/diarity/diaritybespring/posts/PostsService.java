@@ -124,4 +124,8 @@ public class PostsService {
     public CommentsResponse unlikeComment(Long commentId, String userEmail) {
         return commentsService.unlike(commentId, userEmail);
     }
+
+    public Integer countByUserId(Long id) {
+        return postsRepository.countByAuthorId(id);
+    }
 }

@@ -1,7 +1,10 @@
 package me.diarity.diaritybespring.users;
 
 import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.posts.PostsService;
+import me.diarity.diaritybespring.posts.comments.CommentsService;
 import me.diarity.diaritybespring.users.dto.UsersMapper;
+import me.diarity.diaritybespring.users.dto.UsersProfileResponse;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
 import me.diarity.diaritybespring.users.dto.UsersSaveRequest;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UsersService {
     private final UsersRepository usersRepository;
+    private final PostsService postsService;
+    private final CommentsService commentsService;
 
     public UsersResponse findById(Long id) {
         Users user = findEntityById(id);
@@ -35,5 +40,16 @@ public class UsersService {
 
     public Users findEntityByEmail(String email) {
         return usersRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+    }
+
+    public UsersProfileResponse getProfile(String userEmail) {
+        Users user = findEntityByEmail(userEmail);
+        int PostsCount = postsService.countByUserId(user.getId());
+        int CommentsCount = commentsService.countCommentsByUserId(user.getId());
+        return UsersProfileResponse.builder()
+                .usersInfo(UsersMapper.INSTANCE.toResponse(user))
+                .postsCount(PostsCount)
+                .commentsCount(CommentsCount)
+                .build();
     }
 }
