@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-boot-config
+  namespace: homeserver-apps
+data:
+  application.properties: |
+    server.port=8080
+    management.server.port=9091
+    management.endpoints.web.exposure.include=health,info,metrics
+    logging.level.root=INFO
+    spring.application.name=home-service
