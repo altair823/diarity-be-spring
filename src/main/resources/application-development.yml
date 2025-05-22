@@ -19,10 +19,18 @@ spring:
         batch_size: 100
         order_inserts: true
         show_sql: false
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
   datasource:
     url: ENC(1iJnjtP3+zwsxsVN+/chlN/4yR8vUUJ/wPG53guGg0GNJRhgAiBygEZzmsQBFT0rhdX3/YwbuATlVqkNDnIemSh/X7JaAO9zAHybaHEv5E0=)
     username: ENC(TwJf8ipc9jjUbnaV+/J95gvH+sPS+JvMfr3uGhDB8gy61ksIsLykfDJVEeg2n6Sh)
     password: ENC(/SXZTHWDktYfpTm5yUqGOujbzoPhFreIaaFsD50WlFPPmFF9O8tJt4X3Hf36WcXOTQhftA3yzFMaKiIPgOKFYw==)
+    slaves:
+      slave1:
+        url: ENC(eb4c98f2Vo6GGgGzADj1ClrZpZPiKWva47soThWH0ztHGLAgkSEBQUoCykWnf6DEt89e1/X9B3g1ztpmaCtrPwaMhZwYitGpHzAIl0cY+6c=)
+        tag: slave1
+      slave2:
+        url: ENC(8ZTFcpaSWmkRocbRiZx+CaJAKQG/Zw6bdMTVjiSIOn43LcynePUCa/N6Z8fHFFCU/JDEg5LyoyYZ3/sRjVlBqoVml3HsHwrztP72EGzNSzg=)
+        tag: slave2
     hikari:
       maximum-pool-size: 30
 

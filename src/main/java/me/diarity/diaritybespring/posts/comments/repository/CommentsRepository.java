@@ -27,4 +27,6 @@ public interface CommentsRepository extends JpaRepository<Comments, Long> {
                     "WHERE c.post.id = :postId"
     )
     List<CommentsWithLikeResponse> findAllByPostIdWithLike(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    Integer countByAuthorId(Long authorId);
 }

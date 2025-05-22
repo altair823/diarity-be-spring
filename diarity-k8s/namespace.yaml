@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homeserver-apps
+  labels:
+    name: homeserver-apps
+    environment: production

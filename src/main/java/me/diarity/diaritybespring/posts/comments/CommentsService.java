@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentsService {
     private final CommentsRepository commentRepository;
     private final CommentsHierarchyRepository commentsHierarchyRepository;
@@ -141,5 +142,9 @@ public class CommentsService {
         );
 
         return CommentsMapper.INSTANCE.toResponse(comments);
+    }
+
+    public int countCommentsByUserId(Long userId) {
+        return commentRepository.countByAuthorId(userId);
     }
 }

@@ -1,0 +1,3 @@
+harbor-registry-secret.yaml
+spring-boot-deployment.yaml
+*.md
