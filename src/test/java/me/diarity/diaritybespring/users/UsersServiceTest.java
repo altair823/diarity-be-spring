@@ -29,7 +29,7 @@ public class UsersServiceTest {
             .email("testemail@gmail.com")
             .name("testUser")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.READ_ONLY)
             .displayName("testUser")
             .build();
 
@@ -46,7 +46,7 @@ public class UsersServiceTest {
         assertThat(usersResponse.getEmail()).isEqualTo(user.getEmail());
         assertThat(usersResponse.getName()).isEqualTo(user.getName());
         assertThat(usersResponse.getPicture()).isEqualTo(user.getPicture());
-        assertThat(usersResponse.getRole()).isEqualTo(user.getRole());
+        assertThat(usersResponse.getRole()).isEqualTo(user.getRole().toString());
         assertThat(usersResponse.getDisplayName()).isEqualTo(user.getDisplayName());
     }
 
@@ -75,7 +75,7 @@ public class UsersServiceTest {
         assertThat(usersResponse.getEmail()).isEqualTo(user.getEmail());
         assertThat(usersResponse.getName()).isEqualTo(user.getName());
         assertThat(usersResponse.getPicture()).isEqualTo(user.getPicture());
-        assertThat(usersResponse.getRole()).isEqualTo(user.getRole());
+        assertThat(usersResponse.getRole()).isEqualTo(user.getRole().toString());
         assertThat(usersResponse.getDisplayName()).isEqualTo(user.getDisplayName());
     }
 
@@ -105,7 +105,7 @@ public class UsersServiceTest {
                         .email(usersSaveRequest.getEmail())
                         .name(usersSaveRequest.getName())
                         .picture(usersSaveRequest.getPicture())
-                        .role("NORMAL")
+                        .role(UsersRole.NORMAL)
                         .displayName(usersSaveRequest.getName())
                         .build()
         );

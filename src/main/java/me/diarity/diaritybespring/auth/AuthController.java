@@ -80,6 +80,9 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
+        if (request.getCookies() == null) {
+            throw new RuntimeException("No refresh token");
+        }
         String refreshToken = Arrays.stream(request.getCookies())
                 .filter(cookie -> "refresh_token".equals(cookie.getName()))
                 .map(Cookie::getValue)

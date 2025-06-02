@@ -13,6 +13,7 @@ import me.diarity.diaritybespring.posts.comments.repository.CommentsLikesReposit
 import me.diarity.diaritybespring.posts.comments.repository.CommentsRepository;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.UsersRole;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -49,7 +50,7 @@ public class CommentsServiceTest {
             .email("testemail@gmail.com")
             .name("testUser")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.NORMAL)
             .displayName("testUser")
             .build();
 

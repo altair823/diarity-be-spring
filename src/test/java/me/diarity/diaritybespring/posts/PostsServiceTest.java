@@ -11,6 +11,7 @@ import me.diarity.diaritybespring.posts.likes.dto.PostsLikesRequest;
 import me.diarity.diaritybespring.posts.likes.dto.PostsLikesResponse;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.UsersRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -26,6 +27,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import static me.diarity.diaritybespring.posts.PostsTestUtils.assertPostsResponse;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +52,7 @@ public class PostsServiceTest {
             .email("testemail@gmail.com")
             .name("testUser")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.NORMAL)
             .displayName("testUser")
             .build();
 
@@ -89,18 +91,6 @@ public class PostsServiceTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    private void assertPostsResponse(PostsResponse postsResponses, Posts posts2, Instant post2CreatedAt, Instant post2ModifiedAt) {
-        assertThat(postsResponses.getTitle()).isEqualTo(posts2.getTitle());
-        assertThat(postsResponses.getContent()).isEqualTo(posts2.getContent());
-        assertThat(postsResponses.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.getCreatedAt()).isEqualTo(post2CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getModifiedAt()).isEqualTo(post2ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getIsPublic()).isEqualTo(posts2.getIsPublic());
-        assertThat(postsResponses.getIsDeleted()).isEqualTo(posts2.getIsDeleted());
-        assertThat(postsResponses.getDeletedAt()).isEqualTo(posts2.getDeletedAt());
-        assertThat(postsResponses.getLikesCount()).isEqualTo(posts2.getLikesCount());
-        assertThat(postsResponses.getCommentsCount()).isEqualTo(posts2.getCommentsCount());
-    }
 
     @Test
     public void findAllAnonymousUser() {
@@ -115,8 +105,8 @@ public class PostsServiceTest {
         List<PostsResponse> postsResponses = postsService.findAll("anonymousUser");
 
         // then
-        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
-        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponses.getFirst(), posts2);
+        assertPostsResponse(postsResponses.get(1), posts1);
     }
 
 
@@ -137,8 +127,8 @@ public class PostsServiceTest {
         List<PostsResponse> postsResponses = postsService.findAll(author.getEmail());
 
         // then
-        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
-        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponses.getFirst(), posts2);
+        assertPostsResponse(postsResponses.get(1), posts1);
     }
 
     @Test
@@ -157,7 +147,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.create(postsCreateRequest, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -203,7 +193,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.findById(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -230,7 +220,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.findById(1L, "anonymousUser");
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -266,7 +256,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.like(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -320,7 +310,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.unlike(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
