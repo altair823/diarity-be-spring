@@ -105,7 +105,7 @@ public class UsersServiceTest {
                         .email(usersSaveRequest.getEmail())
                         .name(usersSaveRequest.getName())
                         .picture(usersSaveRequest.getPicture())
-                        .role(UsersRole.NORMAL)
+                        .role(UsersRole.READ_ONLY)
                         .displayName(usersSaveRequest.getName())
                         .build()
         );
@@ -118,7 +118,7 @@ public class UsersServiceTest {
         assertThat(usersResponse.getEmail()).isEqualTo(usersSaveRequest.getEmail());
         assertThat(usersResponse.getName()).isEqualTo(usersSaveRequest.getName());
         assertThat(usersResponse.getPicture()).isEqualTo(usersSaveRequest.getPicture());
-        assertThat(usersResponse.getRole()).isEqualTo("NORMAL");
+        assertThat(usersResponse.getRole()).isEqualTo("READ_ONLY");
         assertThat(usersResponse.getDisplayName()).isEqualTo(usersSaveRequest.getName());
     }
 
