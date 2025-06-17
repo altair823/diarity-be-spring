@@ -55,11 +55,19 @@ ingress:
   className: nginx
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
   hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: diarity-be-service
+              port:
+                number: 80
     - host: app.home.local
       paths:
-        - path: /(.*)
+        - path: /
           pathType: Prefix
           backend:
             service:
@@ -68,7 +76,7 @@ ingress:
                 number: 80
     - host: monitoring.home.local
       paths:
-        - path: /(.*)
+        - path: /
           pathType: Prefix
           backend:
             service:
