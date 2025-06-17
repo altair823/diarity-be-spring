@@ -4,6 +4,7 @@ import me.diarity.diaritybespring.tasks.dto.TasksCreateRequest;
 import me.diarity.diaritybespring.tasks.dto.TasksResponse;
 import me.diarity.diaritybespring.tasks.entity.Tasks;
 import me.diarity.diaritybespring.users.Users;
+import me.diarity.diaritybespring.users.UsersRole;
 import me.diarity.diaritybespring.users.UsersService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -34,7 +35,7 @@ public class TasksServiceTest {
             .name("Test User")
             .email("testEmail@gmail.com")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.NORMAL)
             .displayName("Test Display Name")
             .build();
 

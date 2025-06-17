@@ -22,8 +22,9 @@ public class Users {
     private String email;
     private String picture;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private UsersRole role;
 
     @Column(nullable = false)
     private String displayName;

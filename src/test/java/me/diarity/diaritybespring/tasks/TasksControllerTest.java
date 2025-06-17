@@ -4,6 +4,7 @@ import me.diarity.diaritybespring.tasks.dto.TasksCreateRequest;
 import me.diarity.diaritybespring.tasks.dto.TasksResponse;
 import me.diarity.diaritybespring.tasks.entity.Tasks;
 import me.diarity.diaritybespring.users.Users;
+import me.diarity.diaritybespring.users.UsersRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -34,7 +35,7 @@ class TasksControllerTest {
             .name("Test User")
             .email("testEmail@gmail.com")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.NORMAL)
             .displayName("Test Display Name")
             .build();
 

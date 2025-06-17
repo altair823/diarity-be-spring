@@ -40,3 +40,4 @@ database/mysql
 
 application-jasypt.yml
 /src/main/generated/
+diarity-be-helmchart/secrets.yaml

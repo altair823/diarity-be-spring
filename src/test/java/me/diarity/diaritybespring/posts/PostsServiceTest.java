@@ -11,6 +11,7 @@ import me.diarity.diaritybespring.posts.likes.dto.PostsLikesRequest;
 import me.diarity.diaritybespring.posts.likes.dto.PostsLikesResponse;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.UsersRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -26,6 +27,8 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import static me.diarity.diaritybespring.posts.PostsTestUtils.assertPostsResponse;
+import static me.diarity.diaritybespring.posts.PostsTestUtils.createPosts;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +53,7 @@ public class PostsServiceTest {
             .email("testemail@gmail.com")
             .name("testUser")
             .picture("testPicture")
-            .role("NORMAL")
+            .role(UsersRole.NORMAL)
             .displayName("testUser")
             .build();
 
@@ -59,22 +62,6 @@ public class PostsServiceTest {
     private final Instant postModifiedAt = Instant.ofEpochMilli(1641081600000L);
     private final Instant post2CreatedAt = Instant.ofEpochMilli(1642075200000L);
     private final Instant post2ModifiedAt = Instant.ofEpochMilli(1642161600000L);
-    private Posts createPosts(Instant createdAt, Instant modifiedAt, int likesCount) {
-        return Posts.builder()
-                .id(1L)
-                .bookTitle("testBookTitle")
-                .title("testTitle")
-                .content("testContent")
-                .author(author)
-                .createdAt(createdAt)
-                .modifiedAt(modifiedAt)
-                .isPublic(true)
-                .isDeleted(false)
-                .deletedAt(null)
-                .likesCount(likesCount)
-                .commentsCount(0)
-                .build();
-    }
 
     @BeforeEach
     public void setUp() {
@@ -89,24 +76,12 @@ public class PostsServiceTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    private void assertPostsResponse(PostsResponse postsResponses, Posts posts2, Instant post2CreatedAt, Instant post2ModifiedAt) {
-        assertThat(postsResponses.getTitle()).isEqualTo(posts2.getTitle());
-        assertThat(postsResponses.getContent()).isEqualTo(posts2.getContent());
-        assertThat(postsResponses.getAuthor().getEmail()).isEqualTo(author.getEmail());
-        assertThat(postsResponses.getCreatedAt()).isEqualTo(post2CreatedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getModifiedAt()).isEqualTo(post2ModifiedAt.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        assertThat(postsResponses.getIsPublic()).isEqualTo(posts2.getIsPublic());
-        assertThat(postsResponses.getIsDeleted()).isEqualTo(posts2.getIsDeleted());
-        assertThat(postsResponses.getDeletedAt()).isEqualTo(posts2.getDeletedAt());
-        assertThat(postsResponses.getLikesCount()).isEqualTo(posts2.getLikesCount());
-        assertThat(postsResponses.getCommentsCount()).isEqualTo(posts2.getCommentsCount());
-    }
 
     @Test
     public void findAllAnonymousUser() {
         // given
-        Posts posts1 = createPosts(postCreatedAt, postModifiedAt, 0);
-        Posts posts2 = createPosts(post2CreatedAt, post2ModifiedAt, 0);
+        Posts posts1 = createPosts(author, postCreatedAt, postModifiedAt, 0);
+        Posts posts2 = createPosts(author, post2CreatedAt, post2ModifiedAt, 0);
         when(postsRepository.findAllByOrderByCreatedAtDesc()).thenReturn(
                 List.of(posts2, posts1)
         );
@@ -115,16 +90,16 @@ public class PostsServiceTest {
         List<PostsResponse> postsResponses = postsService.findAll("anonymousUser");
 
         // then
-        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
-        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponses.getFirst(), posts2);
+        assertPostsResponse(postsResponses.get(1), posts1);
     }
 
 
     @Test
     public void findAllNormalUser() {
         // given
-        Posts posts1 = createPosts(postCreatedAt, postModifiedAt, 0);
-        Posts posts2 = createPosts(post2CreatedAt, post2ModifiedAt, 0);
+        Posts posts1 = createPosts(author, postCreatedAt, postModifiedAt, 0);
+        Posts posts2 = createPosts(author, post2CreatedAt, post2ModifiedAt, 0);
         when(postsRepository.findAllByOrderByCreatedAtDescWithLiked(1L)).thenReturn(
                 List.of(
                         List.of(posts2, false).toArray(),
@@ -137,14 +112,14 @@ public class PostsServiceTest {
         List<PostsResponse> postsResponses = postsService.findAll(author.getEmail());
 
         // then
-        assertPostsResponse(postsResponses.getFirst(), posts2, post2CreatedAt, post2ModifiedAt);
-        assertPostsResponse(postsResponses.get(1), posts1, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponses.getFirst(), posts2);
+        assertPostsResponse(postsResponses.get(1), posts1);
     }
 
     @Test
     public void create() {
         // given
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, 0);
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
         PostsCreateRequest postsCreateRequest = PostsCreateRequest.builder()
@@ -157,7 +132,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.create(postsCreateRequest, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -180,7 +155,7 @@ public class PostsServiceTest {
     @Test
     public void findById() {
         // given
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, 0);
         when(postsRepository.findByIdWithLiked(1L, author.getId()))
                 .thenReturn(Optional.of(PostsWithLikeResponse.builder()
                         .id(posts.getId())
@@ -203,7 +178,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.findById(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -223,14 +198,14 @@ public class PostsServiceTest {
     @Test
     public void findByIdAnonymousUser() {
         // given
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, 0);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, 0);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
 
         // when
         PostsResponse postsResponse = postsService.findById(1L, "anonymousUser");
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -250,7 +225,7 @@ public class PostsServiceTest {
     public void like() {
         // given
         int initialLikesCount = 0;
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
@@ -266,7 +241,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.like(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -285,7 +260,7 @@ public class PostsServiceTest {
     public void likeDuplicate() {
         // given
         int initialLikesCount = 0;
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
         when(postsLikesService.like(PostsLikesRequest.builder()
@@ -304,7 +279,7 @@ public class PostsServiceTest {
     public void unlike() {
         // given
         int initialLikesCount = 1;
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(postsRepository.save(any())).thenReturn(posts);
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
@@ -320,7 +295,7 @@ public class PostsServiceTest {
         PostsResponse postsResponse = postsService.unlike(1L, author.getEmail());
 
         // then
-        assertPostsResponse(postsResponse, posts, postCreatedAt, postModifiedAt);
+        assertPostsResponse(postsResponse, posts);
     }
 
     @Test
@@ -339,7 +314,7 @@ public class PostsServiceTest {
     public void unlikeNotLikedFail() {
         // given
         int initialLikesCount = 0;
-        Posts posts = createPosts(postCreatedAt, postModifiedAt, initialLikesCount);
+        Posts posts = createPosts(author, postCreatedAt, postModifiedAt, initialLikesCount);
         when(postsRepository.findById(1L)).thenReturn(Optional.of(posts));
         when(usersRepository.findByEmail(author.getEmail())).thenReturn(Optional.of(author));
         when(postsLikesService.unlike(PostsLikesRequest.builder()
