@@ -52,38 +52,6 @@ actuator:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-  hosts:
-    - host: ""
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: diarity-be-service
-              port:
-                number: 80
-    - host: app.home.local
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: diarity-be-service
-              port:
-                number: 80
-    - host: monitoring.home.local
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: diarity-be-service
-              port:
-                number: 9091
-  tls: []
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:

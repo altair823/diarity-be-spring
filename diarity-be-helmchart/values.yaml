@@ -5,6 +5,15 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: diarity-be-service
+              port:
+                number: 80
     - host: app.home.local
       paths:
         - path: /
