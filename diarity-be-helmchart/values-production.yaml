@@ -1,0 +1,4 @@
+diarity-be:
+  spring:
+    profiles:
+      active: production
