@@ -12,6 +12,7 @@ import me.diarity.diaritybespring.posts.likes.PostsLikesService;
 import me.diarity.diaritybespring.posts.likes.dto.PostsLikesRequest;
 import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
+import me.diarity.diaritybespring.users.UsersRole;
 import me.diarity.diaritybespring.users.dto.UsersMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,9 @@ public class PostsService {
     public PostsResponse create(PostsCreateRequest postsCreateRequest, String userEmail) {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+        if (user.getRole() == UsersRole.READ_ONLY) {
+            throw new IllegalArgumentException("읽기 전용 사용자는 게시글을 작성할 수 없습니다.");
+        }
         Posts posts = postsRepository.save(PostsMapper.INSTANCE.toEntity(postsCreateRequest, user));
         return PostsMapper.INSTANCE.toResponse(posts);
     }

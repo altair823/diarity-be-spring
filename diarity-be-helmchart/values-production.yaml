@@ -1,4 +1,4 @@
 diarity-be:
   spring:
     profiles:
-      active: development
+      active: production

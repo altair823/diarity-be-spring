@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "diarity-be.fullname" . }}-config
+  labels:
+    {{- include "diarity-be.labels" . | nindent 4 }}
+data:
+  application.properties: |
+    server.port={{ .Values.service.port }}
+    management.server.port={{ .Values.service.actuatorPort }}
+    management.endpoints.web.exposure.include={{ .Values.actuator.exposure.include | join "," }}
+    logging.level.root={{ .Values.logging.level.root }}
+    spring.application.name={{ .Chart.Name }}

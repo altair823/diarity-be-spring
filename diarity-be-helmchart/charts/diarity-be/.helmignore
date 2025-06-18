@@ -21,6 +21,3 @@
 .idea/
 *.tmproj
 .vscode/
-
-# Secret files. These should be handled separately and not included in the chart.
-secrets.yaml

@@ -19,7 +19,7 @@ public interface UsersMapper {
     Users toEntity(UsersSaveRequest usersSaveRequest);
 
     @Mappings({
-            @Mapping(target = "role", constant = "NORMAL"),
+            @Mapping(target = "role", constant = "READ_ONLY"), // 기본 역할을 읽기 전용으로 설정
             @Mapping(target = "displayName", source = "name")
     })
     UsersSaveRequest toRequest(LoginUserInfoResponse loginUserInfoResponse);
