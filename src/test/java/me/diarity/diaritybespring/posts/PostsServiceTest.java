@@ -499,4 +499,17 @@ public class PostsServiceTest {
         // then
         assertCommentsResponse(commentsResponseResult, commentsResponse);
     }
+
+    @Test
+    void countByUserId() {
+    // given
+        Long userId = 1L;
+        when(postsRepository.countByAuthorId(userId)).thenReturn(5);
+
+        // when
+        Integer count = postsService.countByUserId(userId);
+
+        // then
+        assertThat(count).isEqualTo(5);
+    }
 }

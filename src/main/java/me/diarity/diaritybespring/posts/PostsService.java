@@ -14,6 +14,7 @@ import me.diarity.diaritybespring.users.Users;
 import me.diarity.diaritybespring.users.UsersRepository;
 import me.diarity.diaritybespring.users.UsersRole;
 import me.diarity.diaritybespring.users.dto.UsersMapper;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -131,5 +132,18 @@ public class PostsService {
 
     public Integer countByUserId(Long id) {
         return postsRepository.countByAuthorId(id);
+    }
+
+    public List<PostsResponse> findAllByUser(Users user) {
+        List<Posts> posts = postsRepository.findAllByAuthorOrderByCreatedAtDesc(user);
+        return posts.stream().map(PostsMapper.INSTANCE::toResponse).toList();
+    }
+
+    public List<PostsResponse> findByUserLimitCount(Users user, Integer count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("요청 게시글 개수는 0 이상의 정수여야 합니다.");
+        }
+        List<Posts> posts = postsRepository.findAllByAuthorOrderByCreatedAtDesc(user, Limit.of(count));
+        return posts.stream().map(PostsMapper.INSTANCE::toResponse).toList();
     }
 }

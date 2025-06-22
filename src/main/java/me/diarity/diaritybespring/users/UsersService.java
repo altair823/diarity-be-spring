@@ -3,12 +3,15 @@ package me.diarity.diaritybespring.users;
 import lombok.RequiredArgsConstructor;
 import me.diarity.diaritybespring.posts.PostsService;
 import me.diarity.diaritybespring.posts.comments.CommentsService;
+import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import me.diarity.diaritybespring.users.dto.UsersMapper;
 import me.diarity.diaritybespring.users.dto.UsersProfileResponse;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
 import me.diarity.diaritybespring.users.dto.UsersSaveRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +45,8 @@ public class UsersService {
         return usersRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
     }
 
-    public UsersProfileResponse getProfile(String userEmail) {
-        Users user = findEntityByEmail(userEmail);
+    public UsersProfileResponse getProfile(Long userId) {
+        Users user = findEntityById(userId);
         int PostsCount = postsService.countByUserId(user.getId());
         int CommentsCount = commentsService.countCommentsByUserId(user.getId());
         return UsersProfileResponse.builder()
@@ -51,5 +54,15 @@ public class UsersService {
                 .postsCount(PostsCount)
                 .commentsCount(CommentsCount)
                 .build();
+    }
+
+    public List<PostsResponse> findPostsByUserId(Long userId, Integer count) {
+        if (count == null) {
+            Users user = findEntityById(userId);
+            return postsService.findAllByUser(user);
+        } else {
+            Users user = findEntityById(userId);
+            return postsService.findByUserLimitCount(user, count);
+        }
     }
 }

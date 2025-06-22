@@ -593,4 +593,17 @@ public class CommentsServiceTest {
                 () -> commentsService.unlike(comments.getId(), user.getEmail()));
         assertThat(e.getMessage()).isEqualTo("좋아요를 누르지 않은 댓글입니다.");
     }
+
+    @Test
+    void countCommentsByUserId() {
+        // given
+        Long userId = 1L;
+        when(commentsRepository.countByAuthorId(userId)).thenReturn(5);
+
+        // when
+        int count = commentsService.countCommentsByUserId(userId);
+
+        // then
+        assertThat(count).isEqualTo(5);
+    }
 }

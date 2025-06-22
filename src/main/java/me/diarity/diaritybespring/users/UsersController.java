@@ -1,12 +1,11 @@
 package me.diarity.diaritybespring.users;
 
 import lombok.RequiredArgsConstructor;
+import me.diarity.diaritybespring.posts.dto.PostsResponse;
 import me.diarity.diaritybespring.users.dto.UsersProfileResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import static me.diarity.diaritybespring.utils.UsersContextHandler.getUserEmail;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -14,9 +13,13 @@ import static me.diarity.diaritybespring.utils.UsersContextHandler.getUserEmail;
 public class UsersController {
     private final UsersService usersService;
 
-    @GetMapping("profile")
-    public UsersProfileResponse getUserProfile() {
-        String userEmail = getUserEmail();
-        return usersService.getProfile(userEmail);
+    @GetMapping("{id}")
+    public UsersProfileResponse getUserProfile(@PathVariable Long id) {
+        return usersService.getProfile(id);
+    }
+
+    @GetMapping("{id}/posts")
+    public List<PostsResponse> getUserPosts(@PathVariable Long id, @RequestParam (required = false) Integer count) {
+        return usersService.findPostsByUserId(id, count);
     }
 }
