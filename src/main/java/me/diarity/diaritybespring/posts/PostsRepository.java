@@ -1,6 +1,8 @@
 package me.diarity.diaritybespring.posts;
 
 import me.diarity.diaritybespring.posts.dto.PostsWithLikeResponse;
+import me.diarity.diaritybespring.users.Users;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +36,7 @@ public interface PostsRepository extends JpaRepository<Posts, Long> {
     Optional<PostsWithLikeResponse> findByIdWithLiked(@Param("postId") Long postId, @Param("userId") Long userId);
 
     Integer countByAuthorId(Long authorId);
+
+    List<Posts> findAllByAuthorOrderByCreatedAtDesc(Users user);
+    List<Posts> findAllByAuthorOrderByCreatedAtDesc(Users user, Limit limit);
 }

@@ -1,5 +1,8 @@
 package me.diarity.diaritybespring.users;
 
+import me.diarity.diaritybespring.posts.PostsService;
+import me.diarity.diaritybespring.posts.comments.CommentsService;
+import me.diarity.diaritybespring.users.dto.UsersProfileResponse;
 import me.diarity.diaritybespring.users.dto.UsersResponse;
 import me.diarity.diaritybespring.users.dto.UsersSaveRequest;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +22,12 @@ public class UsersServiceTest {
 
     @Mock
     private UsersRepository usersRepository;
+
+    @Mock
+    private PostsService postsService;
+
+    @Mock
+    private CommentsService commentsService;
 
     @InjectMocks
     private UsersService usersService;
@@ -178,5 +187,26 @@ public class UsersServiceTest {
         // throws IllegalArgumentException
         IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> usersService.findEntityByEmail(user.getEmail()));
         assertThat(e.getMessage()).isEqualTo("해당 사용자가 없습니다.");
+    }
+
+    @Test
+    public void getProfile() {
+        // given
+        when(usersRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(postsService.countByUserId(user.getId())).thenReturn(5);
+        when(commentsService.countCommentsByUserId(user.getId())).thenReturn(10);
+
+        // when
+        UsersProfileResponse profileResponse = usersService.getProfile(user.getId());
+
+        // then
+        assertThat(profileResponse.getUsersInfo().getId()).isEqualTo(user.getId());
+        assertThat(profileResponse.getUsersInfo().getEmail()).isEqualTo(user.getEmail());
+        assertThat(profileResponse.getUsersInfo().getName()).isEqualTo(user.getName());
+        assertThat(profileResponse.getUsersInfo().getPicture()).isEqualTo(user.getPicture());
+        assertThat(profileResponse.getUsersInfo().getRole()).isEqualTo(user.getRole().toString());
+        assertThat(profileResponse.getUsersInfo().getDisplayName()).isEqualTo(user.getDisplayName());
+        assertThat(profileResponse.getPostsCount()).isEqualTo(5);
+        assertThat(profileResponse.getCommentsCount()).isEqualTo(10);
     }
 }
